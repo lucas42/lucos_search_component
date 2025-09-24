@@ -1,0 +1,26 @@
+{
+  "name": "lucos_search_component",
+  "version": "0.0.1",
+  "description": "Web Component for searching lucOS data",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example": "webpack -c example/webpack.config.js && open example/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucas42/lucos_search_component.git"
+  },
+  "keywords": [
+    "lucos",
+    "search"
+  ],
+  "author": "Luke Blaney",
+  "bugs": {
+    "url": "https://github.com/lucas42/lucos_search_component/issues"
+  },
+  "homepage": "https://github.com/lucas42/lucos_search_component#readme",
+  "devDependencies": {
+    "webpack-cli": "^6.0.1"
+  }
+}

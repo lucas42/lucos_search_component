@@ -1,0 +1,14 @@
+version: 2.1
+orbs:
+  lucos: lucos/deploy@0
+
+workflows:
+  version: 2
+  publish:
+    jobs:
+      - lucos/component-publish:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
