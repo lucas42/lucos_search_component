@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "example": "webpack -c example/webpack.config.js && open example/index.html"
+    "example": "source .env && KEY_LUCOS_ARACHNE=$KEY_LUCOS_ARACHNE envsubst < example/index.html > example/built.html && webpack -c example/webpack.config.js && open example/built.html"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,6 @@
 node_modules
 example/built.js
+example/built.html
 coverage
 .env
 .DS_Store
