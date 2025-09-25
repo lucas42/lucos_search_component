@@ -22,6 +22,10 @@
   },
   "homepage": "https://github.com/lucas42/lucos_search_component#readme",
   "devDependencies": {
+    "css-loader": "^7.1.2",
     "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "tom-select": "^2.4.3"
   }
 }
