@@ -1,6 +1,6 @@
 {
   "name": "lucos_search_component",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Web Component for searching lucOS data",
   "type": "module",
   "main": "index.js",
