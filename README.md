@@ -16,6 +16,19 @@ Include the following in your html:
 <lucos-search></lucos-search>
 ```
 
+Include the following in the project's webpack.config.js:
+```
+
+	module: {
+		rules: [
+			{
+				test: /\.css$/i,
+				use: ["css-loader"],
+			},
+		],
+	},
+ ```
+
 ## Manual Testing
 
 Expects a `.env` file in the root directory with the following environment variables:
