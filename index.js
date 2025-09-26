@@ -60,9 +60,13 @@ class LucosSearchComponent extends HTMLSelectElement {
 		`;
 		component.appendChild(mainStyle);
 
-		const tomStyle = document.createElement('style');
-		tomStyle.textContent = tomSelectStylesheet[0][1];
-		component.appendChild(tomStyle);
+		// If webpack is configured with `css-loader` but not `style-loader`, include the tom-select stylesheet here
+		// (If `style-loader` is being used, the tom-select stylesheet will be handled by that)
+		if (tomSelectStylesheet) {
+			const tomStyle = document.createElement('style');
+			tomStyle.textContent = tomSelectStylesheet[0][1];
+			component.appendChild(tomStyle);
+		}
 
 		component.setAttribute("multiple", "multiple");
 		new TomSelect(component, {
