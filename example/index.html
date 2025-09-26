@@ -3,7 +3,9 @@
 		<title>Hello World Search Component</title>
 	</head>
 	<body>
-		<label for="search-field">Search For:</label><select is="lucos-search" api-key="${KEY_LUCOS_ARACHNE}" id="search-field"></select>
+		<label for="search-field">Everything:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field"></select>
+		<label for="search-field">No Tracks:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field" data-exclude_types="Track"></select>
+		<label for="search-field">Only Cites and Rivers:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field" data-types="City,River"></select>
 		<script src="./built.js"></script>
 	</body>
 </html>

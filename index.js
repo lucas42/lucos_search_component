@@ -3,7 +3,7 @@ import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 
 class LucosSearchComponent extends HTMLSelectElement {
 	static get observedAttributes() {
-		return ['api-key'];
+		return ['data-api-key','data-types','data-exclude-types'];
 	}
 	constructor() {
 		super();
@@ -74,11 +74,13 @@ class LucosSearchComponent extends HTMLSelectElement {
 			labelField: 'pref_label',
 			searchField: [],
 			load: async function(query, callback) {
-				const key = component.getAttribute("api-key");
-				if (!key) throw new Error("No `api-key` attribute set on `lucos-search` component");
+				const key = component.getAttribute("data-api-key");
+				if (!key) throw new Error("No `data-api-key` attribute set on `lucos-search` component");
 				const queryParams = new URLSearchParams({
 					q: query,
 				});
+				if (component.getAttribute("data-types")) queryParams.set("types",component.getAttribute("data-types"));
+				if (component.getAttribute("data-exclude_types")) queryParams.set("exclude_types",component.getAttribute("data-exclude_types"));
 				const response = await fetch("https://arachne.l42.eu/basic-search?"+queryParams.toString(), {
 					headers: { Authorization: `key ${key}` },
 					signal: AbortSignal.timeout(900),
