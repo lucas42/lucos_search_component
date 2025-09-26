@@ -1,14 +1,13 @@
 import TomSelect from 'tom-select';
 import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 
-class LucosSearchComponent extends HTMLElement {
+class LucosSearchComponent extends HTMLSelectElement {
 	static get observedAttributes() {
 		return ['api-key'];
 	}
 	constructor() {
 		super();
 		const component = this;
-		const shadow = component.attachShadow({mode: 'open'});
 
 		const mainStyle = document.createElement('style');
 		mainStyle.textContent = `
@@ -59,16 +58,14 @@ class LucosSearchComponent extends HTMLElement {
 				padding: 2px 6px;
 			}
 		`;
-		shadow.appendChild(mainStyle);
+		component.appendChild(mainStyle);
 
 		const tomStyle = document.createElement('style');
 		tomStyle.textContent = tomSelectStylesheet[0][1];
-		shadow.appendChild(tomStyle);
+		component.appendChild(tomStyle);
 
-		const select = document.createElement("select");
-		select.setAttribute("multiple", "multiple");
-		shadow.appendChild(select);
-		const tomSelect = new TomSelect(select, {
+		component.setAttribute("multiple", "multiple");
+		new TomSelect(component, {
 			valueField: 'id',
 			labelField: 'pref_label',
 			searchField: [],
@@ -113,4 +110,4 @@ class LucosSearchComponent extends HTMLElement {
 		});
 	}
 }
-customElements.define('lucos-search', LucosSearchComponent);
+customElements.define('lucos-search', LucosSearchComponent, { extends: "select" });
