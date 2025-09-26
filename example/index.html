@@ -6,6 +6,11 @@
 		<label for="search-field">Everything:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field"></select>
 		<label for="search-field">No Tracks:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field" data-exclude_types="Track"></select>
 		<label for="search-field">Only Cites and Rivers:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field" data-types="City,River"></select>
+		<label for="search-field">Load with existing items</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field" multiple>
+			<option id="https://contacts.l42.eu/people/2" selected>https://contacts.l42.eu/people/2</option>
+			<option id="https://eolas.l42.eu/metadata/place/2/" selected>https://eolas.l42.eu/metadata/place/2/</option>
+			<option id="https://media-metadata.l42.eu/tracks/13713" selected>https://media-metadata.l42.eu/tracks/13713</option>
+		</select>
 		<script src="./built.js"></script>
 	</body>
 </html>

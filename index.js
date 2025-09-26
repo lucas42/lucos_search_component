@@ -74,21 +74,12 @@ class LucosSearchComponent extends HTMLSelectElement {
 			labelField: 'pref_label',
 			searchField: [],
 			load: async function(query, callback) {
-				const key = component.getAttribute("data-api-key");
-				if (!key) throw new Error("No `data-api-key` attribute set on `lucos-search` component");
 				const queryParams = new URLSearchParams({
 					q: query,
 				});
 				if (component.getAttribute("data-types")) queryParams.set("types",component.getAttribute("data-types"));
 				if (component.getAttribute("data-exclude_types")) queryParams.set("exclude_types",component.getAttribute("data-exclude_types"));
-				const response = await fetch("https://arachne.l42.eu/basic-search?"+queryParams.toString(), {
-					headers: { Authorization: `key ${key}` },
-					signal: AbortSignal.timeout(900),
-				});
-				const data = await response.json();
-				const results = data.hits.map(result => {
-					return {...result, ...result.document}
-				});
+				const results = await component.basicSearch(queryParams);
 				this.clearOptions();
 				callback(results);
 			},
@@ -105,6 +96,19 @@ class LucosSearchComponent extends HTMLSelectElement {
 			onFocus: function() {
 				this.clearOptions();
 			},
+			// On startup, update any existing options with latest data from search
+			onInitialize: async function() {
+				const ids = Object.keys(this.options);
+				if (ids.length < 1) return;
+				const searchParams = new URLSearchParams({
+					q: '*',
+					ids: ids.join(","),
+				});
+				const results = await component.basicSearch(searchParams);
+				results.forEach(result => {
+					this.updateOption(result.id, result);
+				});
+			},
 			render:{
 				option: function(data, escape) {
 					return `<div>${escape(data.pref_label)}<span class="type lozenge" data-type="${escape(data.type)}">${escape(data.type)}</span></div>`;
@@ -114,6 +118,19 @@ class LucosSearchComponent extends HTMLSelectElement {
 				},
 			},
 		});
+	}
+	async basicSearch(searchParams) {
+		const key = this.getAttribute("data-api-key");
+		if (!key) throw new Error("No `data-api-key` attribute set on `lucos-search` component");
+		const response = await fetch("https://arachne.l42.eu/basic-search?"+searchParams.toString(), {
+			headers: { Authorization: `key ${key}` },
+			signal: AbortSignal.timeout(900),
+		});
+		const data = await response.json();
+		const results = data.hits.map(result => {
+			return {...result, ...result.document}
+		});
+		return results;
 	}
 }
 customElements.define('lucos-search', LucosSearchComponent, { extends: "select" });
