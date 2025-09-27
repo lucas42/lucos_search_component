@@ -86,11 +86,11 @@ class LucosSearchComponent extends HTMLSelectElement {
 			plugins: {
 				remove_button:{
 					title:'Remove this item',
-				}
+				},
+				drag_drop: {},
 			},
-			onItemAdd: function() { // Workaround until https://github.com/orchidjs/tom-select/issues/854 is merged/released
+			onItemAdd: function() { // Workaround until https://github.com/orchidjs/tom-select/pull/945 is merged/released
 				this.setTextboxValue('');
-				this.clearOptions();
 				this.refreshOptions();
 			},
 			onFocus: function() {
