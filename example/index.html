@@ -3,13 +3,29 @@
 		<title>Hello World Search Component</title>
 	</head>
 	<body>
-		<label for="search-field">Everything:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field"></select>
-		<label for="search-field">No Tracks:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field" data-exclude_types="Track"></select>
-		<label for="search-field">Only Cites and Rivers:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field" data-types="City,River"></select>
-		<label for="search-field">Load with existing items</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search-field" multiple>
+		<label for="search1">Everything:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search1"></select>
+		<label for="search2">No Tracks:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search2" data-exclude_types="Track"></select>
+		<label for="search3">Only Cites and Rivers:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search3" data-types="City,River"></select>
+		<label for="search4">Load with existing items:</label><select is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" id="search4" multiple>
 			<option id="https://contacts.l42.eu/people/2" selected>https://contacts.l42.eu/people/2</option>
 			<option id="https://eolas.l42.eu/metadata/place/2/" selected>https://eolas.l42.eu/metadata/place/2/</option>
 			<option id="https://media-metadata.l42.eu/tracks/13713" selected>https://media-metadata.l42.eu/tracks/13713</option>
+		</select>
+		<label for="search5">More than 10:</label>
+		<select is="lucos-search" id="search5" data-api-key="${KEY_LUCOS_ARACHNE}" data-exclude_types="Track" multiple>
+			<option value="https://eolas.l42.eu/metadata/place/125/" selected>https://eolas.l42.eu/metadata/place/125/</option>
+			<option value="https://eolas.l42.eu/metadata/place/126/" selected>https://eolas.l42.eu/metadata/place/126/</option>
+			<option value="https://eolas.l42.eu/metadata/place/28/" selected>https://eolas.l42.eu/metadata/place/28/</option>
+			<option value="https://eolas.l42.eu/metadata/place/307/" selected>https://eolas.l42.eu/metadata/place/307/</option>
+			<option value="https://eolas.l42.eu/metadata/place/308/" selected>https://eolas.l42.eu/metadata/place/308/</option>
+			<option value="https://eolas.l42.eu/metadata/place/310/" selected>https://eolas.l42.eu/metadata/place/310/</option>
+			<option value="https://eolas.l42.eu/metadata/place/311/" selected>https://eolas.l42.eu/metadata/place/311/</option>
+			<option value="https://eolas.l42.eu/metadata/place/312/" selected>https://eolas.l42.eu/metadata/place/312/</option>
+			<option value="https://eolas.l42.eu/metadata/place/313/" selected>https://eolas.l42.eu/metadata/place/313/</option>
+			<option value="https://eolas.l42.eu/metadata/place/314/" selected>https://eolas.l42.eu/metadata/place/314/</option>
+			<option value="https://eolas.l42.eu/metadata/place/315/" selected>https://eolas.l42.eu/metadata/place/315/</option>
+			<option value="https://eolas.l42.eu/metadata/place/316/" selected>https://eolas.l42.eu/metadata/place/316/</option>
+			<option value="https://eolas.l42.eu/metadata/place/317/" selected>https://eolas.l42.eu/metadata/place/317/</option>
 		</select>
 		<script src="./built.js"></script>
 	</body>
