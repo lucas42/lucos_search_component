@@ -77,9 +77,12 @@ class LucosSearchComponent extends HTMLSelectElement {
 				const queryParams = new URLSearchParams({
 					q: query,
 				});
-				if (component.getAttribute("data-types")) queryParams.set("types",component.getAttribute("data-types"));
-				if (component.getAttribute("data-exclude_types")) queryParams.set("exclude_types",component.getAttribute("data-exclude_types"));
-				const results = await component.basicSearch(queryParams);
+				if (component.getAttribute("data-types")) {
+					queryParams.set("filter_by",`type:[${component.getAttribute("data-types")}]`);
+				} else if (component.getAttribute("data-exclude_types")) {
+					queryParams.set("filter_by",`type:![${component.getAttribute("data-exclude_types")}]`);
+				}
+				const results = await component.searchRequest(queryParams);
 				this.clearOptions();
 				callback(results);
 			},
@@ -102,9 +105,10 @@ class LucosSearchComponent extends HTMLSelectElement {
 				if (ids.length < 1) return;
 				const searchParams = new URLSearchParams({
 					q: '*',
-					ids: ids.join(","),
+					filter_by: `id:[${ids.join(",")}]`,
+					per_page: ids.length,
 				});
-				const results = await component.basicSearch(searchParams);
+				const results = await component.searchRequest(searchParams);
 				results.forEach(result => {
 					this.updateOption(result.id, result);
 				});
@@ -119,14 +123,22 @@ class LucosSearchComponent extends HTMLSelectElement {
 			},
 		});
 	}
-	async basicSearch(searchParams) {
+	async searchRequest(searchParams) {
 		const key = this.getAttribute("data-api-key");
 		if (!key) throw new Error("No `data-api-key` attribute set on `lucos-search` component");
-		const response = await fetch("https://arachne.l42.eu/basic-search?"+searchParams.toString(), {
-			headers: { Authorization: `key ${key}` },
+		searchParams.set('query_by', "pref_label,labels,description,lyrics");
+		searchParams.set('query_by_weights', "10,8,3,1");
+		searchParams.set('sort_by', "_text_match:desc,pref_label:asc");
+		searchParams.set('prioritize_num_matching_fields', false);
+		searchParams.set('include_fields', "id,pref_label,type");
+		const response = await fetch("https://arachne.l42.eu/search?"+searchParams.toString(), {
+			headers: { 'X-TYPESENSE-API-KEY': key },
 			signal: AbortSignal.timeout(900),
 		});
 		const data = await response.json();
+		if (!response.ok) {
+			throw new Error(`Recieved ${response.status} error from search endpoint: ${data["message"]}`);
+		}
 		const results = data.hits.map(result => {
 			return {...result, ...result.document}
 		});
