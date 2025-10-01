@@ -50,6 +50,34 @@ class LucosSearchComponent extends HTMLSelectElement {
 				--lozenge-background: #044E00;
 				--lozenge-border: #033100;
 			}
+			/** Aquatic Places **/
+			.lozenge[data-type="Ocean"], .lozenge[data-type="Sea"], .lozenge[data-type="Sea Inlet"], .lozenge[data-type="River"], .lozenge[data-type="Lake"] {
+				--lozenge-background: #0085fe;
+				--lozenge-border: #0036b1;
+			}
+			/** Terrestrial Places **/
+			.lozenge[data-type="Archipelago"], .lozenge[data-type="Area Of Outstanding Natural Beauty"], .lozenge[data-type="Continent"], .lozenge[data-type="Historical Site"], .lozenge[data-type="Island"], .lozenge[data-type="Mountain"] {
+				--lozenge-background: #652c17;
+				--lozenge-border: #321200;
+			}
+			/** Cosmic Places **/
+			.lozenge[data-type="Galaxy"], .lozenge[data-type="Planetary System"], .lozenge[data-type="Star"], .lozenge[data-type="Planet"], .lozenge[data-type="Natural Satellite"] {
+				--lozenge-background: #15163a;
+				--lozenge-border: #000000;
+				--lozenge-text: #feffe8;
+			}
+			/** Human Places **/
+			.lozenge[data-type="Airport"], .lozenge[data-type="Autonomous Area"], .lozenge[data-type="City"], .lozenge[data-type="Country"], .lozenge[data-type="County"], .lozenge[data-type="Dependent Territory"], .lozenge[data-type="Historical Site"], .lozenge[data-type="Neighbourhood"], .lozenge[data-type="Province"], .lozenge[data-type="Region"], .lozenge[data-type="Road"], .lozenge[data-type="State"], .lozenge[data-type="Town"], .lozenge[data-type="Tribal Nation"], .lozenge[data-type="Village"] {
+				--lozenge-background: #aed0db;
+				--lozenge-border: #3f6674;
+				--lozenge-text: #0c1a1b;
+			}
+			/** Supernatural Places **/
+			.lozenge[data-type="Supernatural Realm"] {
+				--lozenge-background: #f1ff5f;
+				--lozenge-border: #674800;
+				--lozenge-text: #352005;
+			}
 			.lozenge.active {
 				--lozenge-border: #b00;
 			}
