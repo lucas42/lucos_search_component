@@ -1,13 +1,14 @@
 import TomSelect from 'tom-select';
 import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 
-class LucosSearchComponent extends HTMLSelectElement {
+class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
 		return ['data-api-key','data-types','data-exclude-types'];
 	}
 	constructor() {
 		super();
 		const component = this;
+		const shadow = component.attachShadow({mode: 'open'});
 
 		const mainStyle = document.createElement('style');
 		mainStyle.textContent = `
@@ -86,18 +87,21 @@ class LucosSearchComponent extends HTMLSelectElement {
 				padding: 2px 6px;
 			}
 		`;
-		component.appendChild(mainStyle);
+		shadow.appendChild(mainStyle);
 
 		// If webpack is configured with `css-loader` but not `style-loader`, include the tom-select stylesheet here
 		// (If `style-loader` is being used, the tom-select stylesheet will be handled by that)
 		if (tomSelectStylesheet) {
 			const tomStyle = document.createElement('style');
 			tomStyle.textContent = tomSelectStylesheet[0][1];
-			component.appendChild(tomStyle);
+			shadow.appendChild(tomStyle);
 		}
 
-		component.setAttribute("multiple", "multiple");
-		new TomSelect(component, {
+		const selector = component.querySelector("select");
+		if (!selector) throw new Error("Can't find select element in lucos-search");
+		shadow.append(selector);
+		selector.setAttribute("multiple", "multiple");
+		new TomSelect(selector, {
 			valueField: 'id',
 			labelField: 'pref_label',
 			searchField: [],
@@ -173,4 +177,4 @@ class LucosSearchComponent extends HTMLSelectElement {
 		return results;
 	}
 }
-customElements.define('lucos-search', LucosSearchComponent, { extends: "select" });
+customElements.define('lucos-search', LucosSearchComponent, { extends: "span" });
