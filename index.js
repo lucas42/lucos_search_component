@@ -85,6 +85,22 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #674800;
 				--lozenge-text: #352005;
 			}
+			.lozenge[data-type="Historical Event"] {
+				--lozenge-background: #740909;
+				--lozenge-border: #470202;
+			}
+			.lozenge[data-type="Number"] {
+				--lozenge-background: #0000ff;
+				--lozenge-border: #000083;
+			}
+			/** Temporal Types **/
+			.lozenge[data-type="Calendar"], .lozenge[data-type="Festival"], .lozenge[data-type="Month of Year"], .lozenge[data-type="Day of Week"] {
+				--lozenge-background: #fffc33;
+				--lozenge-border: #7f7e00;
+				--lozenge-text: #0f0f00;
+			}
+
+
 			.lozenge.active {
 				--lozenge-border: #b00;
 			}
