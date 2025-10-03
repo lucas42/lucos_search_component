@@ -10,6 +10,12 @@ class LucosSearchComponent extends HTMLSpanElement {
 		const component = this;
 		const shadow = component.attachShadow({mode: 'open'});
 
+		if (tomSelectStylesheet) {
+			const tomStyle = document.createElement('style');
+			tomStyle.textContent = tomSelectStylesheet;
+			shadow.appendChild(tomStyle);
+		}
+
 		const mainStyle = document.createElement('style');
 		mainStyle.textContent = `
 			.lozenge {
@@ -86,20 +92,15 @@ class LucosSearchComponent extends HTMLSpanElement {
 				margin: 0 3px;
 				padding: 2px 6px;
 			}
+			.ts-dropdown {
+				margin: 0;
+			}
 		`;
 		shadow.appendChild(mainStyle);
 
-		// If webpack is configured with `css-loader` but not `style-loader`, include the tom-select stylesheet here
-		// (If `style-loader` is being used, the tom-select stylesheet will be handled by that)
-		if (tomSelectStylesheet) {
-			const tomStyle = document.createElement('style');
-			tomStyle.textContent = tomSelectStylesheet;
-			shadow.appendChild(tomStyle);
-		}
 
 		const selector = component.querySelector("select");
 		if (!selector) throw new Error("Can't find select element in lucos-search");
-		shadow.append(selector);
 		selector.setAttribute("multiple", "multiple");
 		new TomSelect(selector, {
 			valueField: 'id',
@@ -154,6 +155,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 				},
 			},
 		});
+		if (selector.nextElementSibling) {
+			shadow.append(selector.nextElementSibling);
+		}
 	}
 	async searchRequest(searchParams) {
 		const key = this.getAttribute("data-api-key");
