@@ -149,7 +149,8 @@ class LucosSearchComponent extends HTMLSpanElement {
 			},
 			render:{
 				option: function(data, escape) {
-					return `<div>${escape(data.pref_label)}<span class="type lozenge" data-type="${escape(data.type)}">${escape(data.type)}</span></div>`;
+					const pref_label = data.pref_label.replace(` (${data.type})`,""); // No need to include any type disambiguation in label, as types are always shown
+					return `<div>${escape(pref_label)}<span class="type lozenge" data-type="${escape(data.type)}">${escape(data.type)}</span></div>`;
 				},
 				item: function(data, escape) {
 					return `<div class="lozenge" data-type="${escape(data.type)}">${escape(data.pref_label)}</div>`;
