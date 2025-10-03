@@ -107,6 +107,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 			labelField: 'pref_label',
 			searchField: [],
 			closeAfterSelect: true,
+			highlight: false, // Will use typesense's hightlight (as it can consider other fields)
 			load: async function(query, callback) {
 				const queryParams = new URLSearchParams({
 					q: query,
@@ -149,8 +150,18 @@ class LucosSearchComponent extends HTMLSpanElement {
 			},
 			render:{
 				option: function(data, escape) {
-					const pref_label = data.pref_label.replace(` (${data.type})`,""); // No need to include any type disambiguation in label, as types are always shown
-					return `<div>${escape(pref_label)}<span class="type lozenge" data-type="${escape(data.type)}">${escape(data.type)}</span></div>`;
+					let label = escape(data.pref_label);
+					let alt_label = "";
+					if (data.highlight.pref_label) {
+						label = data.highlight.pref_label.snippet;
+					} else if (data.highlight.labels) {
+						const matched_label = data.highlight.labels.find(l => l.matched_tokens.length > 0);
+						if (matched_label) {
+							alt_label = ` <span class="alt-label">(${matched_label.snippet})</span>`;
+						}
+					}
+					label = label.replace(` (${data.type})`,""); // No need to include any type disambiguation in label, as types are always shown
+					return `<div>${label}${alt_label}<span class="type lozenge" data-type="${escape(data.type)}">${escape(data.type)}</span></div>`;
 				},
 				item: function(data, escape) {
 					return `<div class="lozenge" data-type="${escape(data.type)}">${escape(data.pref_label)}</div>`;
@@ -168,7 +179,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 		searchParams.set('query_by_weights', "10,8,3,1");
 		searchParams.set('sort_by', "_text_match:desc,pref_label:asc");
 		searchParams.set('prioritize_num_matching_fields', false);
-		searchParams.set('include_fields', "id,pref_label,type");
+		searchParams.set('include_fields', "id,pref_label,type,labels");
+		searchParams.set('enable_highlight_v1', false);
+		searchParams.set('highlight_start_tag', '<span class="highlight">')
+		searchParams.set('highlight_end_tag', '</span>');
 		const response = await fetch("https://arachne.l42.eu/search?"+searchParams.toString(), {
 			headers: { 'X-TYPESENSE-API-KEY': key },
 			signal: AbortSignal.timeout(900),
