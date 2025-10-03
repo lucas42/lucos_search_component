@@ -106,6 +106,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 			valueField: 'id',
 			labelField: 'pref_label',
 			searchField: [],
+			closeAfterSelect: true,
 			load: async function(query, callback) {
 				const queryParams = new URLSearchParams({
 					q: query,
