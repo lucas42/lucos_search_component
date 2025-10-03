@@ -93,7 +93,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		// (If `style-loader` is being used, the tom-select stylesheet will be handled by that)
 		if (tomSelectStylesheet) {
 			const tomStyle = document.createElement('style');
-			tomStyle.textContent = tomSelectStylesheet[0][1];
+			tomStyle.textContent = tomSelectStylesheet;
 			shadow.appendChild(tomStyle);
 		}
 

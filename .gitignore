@@ -4,3 +4,4 @@ example/built.html
 coverage
 .env
 .DS_Store
+dist

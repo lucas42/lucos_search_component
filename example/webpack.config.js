@@ -7,13 +7,5 @@ export default {
     filename: 'built.js',
     path: new URL('.', import.meta.url).pathname,
   },
-  module: {
-    rules: [
-      {
-        test: /\.css$/i,
-        use: ["css-loader"],
-      },
-    ],
-  },
   mode: 'development',
 };

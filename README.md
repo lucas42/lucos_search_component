@@ -13,21 +13,15 @@ import 'lucos_search_component';
 
 Include the following in your html:
 ```
-<lucos-search></lucos-search>
+<span is="lucos-search">
+	<select>
+		<option>A</option>
+		<option>B</option>
+		<option>C</option>
+	</select>
+</span>
 ```
 
-Include the following in the project's webpack.config.js:
-```
-
-	module: {
-		rules: [
-			{
-				test: /\.css$/i,
-				use: ["css-loader"],
-			},
-		],
-	},
- ```
 
 ## Manual Testing
 
