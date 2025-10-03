@@ -95,6 +95,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 			.ts-dropdown {
 				margin: 0;
 			}
+			.lozenge a {
+				color: inherit;
+				text-decoration: none;
+			}
 		`;
 		shadow.appendChild(mainStyle);
 
@@ -148,6 +152,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 					this.updateOption(result.id, result);
 				});
 			},
+			onItemSelect: function (item) {
+				// Tom-select prevents clicking on link in an item to work as normal, so force it here
+				window.open(item.dataset.value, '_blank').focus();
+			},
 			render:{
 				option: function(data, escape) {
 					let label = escape(data.pref_label);
@@ -164,7 +172,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 					return `<div>${label}${alt_label}<span class="type lozenge" data-type="${escape(data.type)}">${escape(data.type)}</span></div>`;
 				},
 				item: function(data, escape) {
-					return `<div class="lozenge" data-type="${escape(data.type)}">${escape(data.pref_label)}</div>`;
+					return `<div class="lozenge" data-type="${escape(data.type)}"><a href="${data.id}" target="_blank">${escape(data.pref_label)}</a></div>`;
 				},
 			},
 		});
