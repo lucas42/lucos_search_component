@@ -6,7 +6,7 @@ workflows:
   version: 2
   publish:
     jobs:
-      - lucos/component-publish:
+      - lucos/component-npm-publish:
           filters:
             tags:
               only: /^v.*/
