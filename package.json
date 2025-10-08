@@ -1,7 +1,7 @@
 {
   "name": "lucos_search_component",
-  "version": "0.0.17",
-  "description": "Web Component for searching lucOS data",
+  "version": "0.1.0",
+  "description": "Web Components for searching lucOS data",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
