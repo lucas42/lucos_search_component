@@ -3,7 +3,7 @@ import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 
 class LucosLangComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key','data-no-lang'];
+		return ['data-api-key','data-no-lang', 'data-common'];
 	}
 	constructor() {
 		super();
@@ -64,6 +64,7 @@ class LucosLangComponent extends HTMLSpanElement {
 			labelField: 'label',
 			searchField: ['code','label'],
 			optgroupField: 'family',
+			lockOptgroupOrder: true,
 			closeAfterSelect: true,
 			plugins: {
 				remove_button:{
@@ -78,19 +79,31 @@ class LucosLangComponent extends HTMLSpanElement {
 			// On startup, update any existing options with latest data from search
 			onInitialize: async function() {
 				const families = await component.getLanguageFamilies();
-				//this.clearOptionGroups();
-				families.forEach(family => {
-					this.addOptionGroup(family.code, family);
-				});
 				const languages = await component.getLanguages();
 
 				// If there's an attribute for a no language option, put that top of the list
-				if (component.getAttribute("data-no-lang")) {
+				if (component.hasAttribute("data-no-lang")) {
 					languages.unshift({
 						code: 'zxx', // ISO 639 code to denote absence of linguistic content
 						label: component.getAttribute("data-no-lang"),
 					});
 				}
+				if (component.hasAttribute("data-common")) {
+					const commonLangs = component.getAttribute("data-common").split(",");
+					console.log(commonLangs);
+					families.unshift({ // Put common languages as top option
+						code: 'x-common',
+						label: 'common languages',
+					});
+					languages.forEach(language => {
+						if (commonLangs.includes(language.code)) {
+							language.family = 'x-common';
+						}
+					})
+				}
+				families.forEach(family => {
+					this.addOptionGroup(family.code, family);
+				});
 				languages.forEach(language => {
 					this.updateOption(language.code, language); // Updates any existing options which are selected with the correct label
 					this.addOption(language); // Makes the option available for new selections
