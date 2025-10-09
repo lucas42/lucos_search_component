@@ -3,7 +3,7 @@ import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 
 class LucosLangComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key'];
+		return ['data-api-key','data-no-lang'];
 	}
 	constructor() {
 		super();
@@ -83,6 +83,14 @@ class LucosLangComponent extends HTMLSpanElement {
 					this.addOptionGroup(family.code, family);
 				});
 				const languages = await component.getLanguages();
+
+				// If there's an attribute for a no language option, put that top of the list
+				if (component.getAttribute("data-no-lang")) {
+					languages.unshift({
+						code: 'zxx', // ISO 639 code to denote absence of linguistic content
+						label: component.getAttribute("data-no-lang"),
+					});
+				}
 				languages.forEach(language => {
 					this.updateOption(language.code, language); // Updates any existing options which are selected with the correct label
 					this.addOption(language); // Makes the option available for new selections
@@ -94,7 +102,11 @@ class LucosLangComponent extends HTMLSpanElement {
 			},
 			render:{
 				item: function(data, escape) {
-					return `<div class="lozenge" data-url="${escape(data.url)}"><a href="${escape(data.url)}" target="_blank">${escape(data.label)}</a></div>`;
+					if (data.url) {
+						return `<div class="lozenge" data-url="${escape(data.url)}"><a href="${escape(data.url)}" target="_blank">${escape(data.label)}</a></div>`;
+					} else {
+						return `<div class="lozenge">${escape(data.label)}</div>`;
+					}
 				},
 			},
 		});
