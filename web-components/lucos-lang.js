@@ -49,6 +49,9 @@ class LucosLangComponent extends HTMLSpanElement {
 				color: inherit;
 				text-decoration: none;
 			}
+			.optgroup-header {
+				text-transform: capitalize;
+			}
 		`;
 		shadow.appendChild(mainStyle);
 
@@ -60,6 +63,7 @@ class LucosLangComponent extends HTMLSpanElement {
 			valueField: 'code',
 			labelField: 'label',
 			searchField: ['code','label'],
+			optgroupField: 'family',
 			closeAfterSelect: true,
 			plugins: {
 				remove_button:{
@@ -73,10 +77,15 @@ class LucosLangComponent extends HTMLSpanElement {
 			},
 			// On startup, update any existing options with latest data from search
 			onInitialize: async function() {
-				const results = await component.searchRequest();
-				results.forEach(result => {
-					this.updateOption(result.code, result); // Updates any existing options which are selected with the correct label
-					this.addOption(result); // Makes the option available for new selections
+				const families = await component.getLanguageFamilies();
+				//this.clearOptionGroups();
+				families.forEach(family => {
+					this.addOptionGroup(family.code, family);
+				});
+				const languages = await component.getLanguages();
+				languages.forEach(language => {
+					this.updateOption(language.code, language); // Updates any existing options which are selected with the correct label
+					this.addOption(language); // Makes the option available for new selections
 				});
 			},
 			onItemSelect: function (item) {
@@ -93,17 +102,9 @@ class LucosLangComponent extends HTMLSpanElement {
 			shadow.append(selector.nextElementSibling);
 		}
 	}
-	async searchRequest() {
+	async searchRequest(searchParams) {
 		const key = this.getAttribute("data-api-key");
 		if (!key) throw new Error("No `data-api-key` attribute set on `lucos-search` component");
-		const searchParams = new URLSearchParams({
-			filter_by: 'type:=Language',
-			query_by: "pref_label",
-			include_fields: "id,pref_label",
-			sort_by: "pref_label:asc",
-			enable_highlight_v1: false,
-			per_page: 200,
-		});
 		const response = await fetch("https://arachne.l42.eu/search?"+searchParams.toString(), {
 			headers: { 'X-TYPESENSE-API-KEY': key },
 			signal: AbortSignal.timeout(900),
@@ -112,14 +113,44 @@ class LucosLangComponent extends HTMLSpanElement {
 		if (!response.ok) {
 			throw new Error(`Recieved ${response.status} error from search endpoint: ${data["message"]}`);
 		}
-		const results = data.hits.map(result => {
+		return data;
+	}
+	async getLanguages() {
+		const searchParams = new URLSearchParams({
+			filter_by: 'type:=Language',
+			query_by: "pref_label",
+			include_fields: "id,pref_label,lang_family",
+			sort_by: "pref_label:asc",
+			enable_highlight_v1: false,
+			per_page: 200,
+		});
+		const data = await this.searchRequest(searchParams);
+		return data.hits.map(result => {
 			return {
 				code: result.document.id.split("/").reverse()[1],
 				label: result.document.pref_label,
 				url: result.document.id,
+				family: result.document.lang_family || 'qli', // If no language family is given, using `qli` code as language isolate
 			}
 		});
-		return results;
+	}
+	async getLanguageFamilies() {
+		const searchParams = new URLSearchParams({
+			filter_by: 'type:=Language Family',
+			query_by: "pref_label",
+			include_fields: "id,pref_label",
+			sort_by: "pref_label:asc",
+			enable_highlight_v1: false,
+			per_page: 200,
+		});
+		const data = await this.searchRequest(searchParams);
+		return data.hits.map(result => {
+			return {
+				code: result.document.id.split("/").pop() || 'qli',
+				label: result.document.pref_label,
+				url: result.document.id,
+			}
+		});
 	}
 }
 customElements.define('lucos-lang', LucosLangComponent, { extends: "span" });
