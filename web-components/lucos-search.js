@@ -68,7 +68,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #321200;
 			}
 			/** Cosmic Places **/
-			.lozenge[data-type="Galaxy"], .lozenge[data-type="Planetary System"], .lozenge[data-type="Star"], .lozenge[data-type="Planet"], .lozenge[data-type="Natural Satellite"] {
+			.lozenge[data-type="Universe"], .lozenge[data-type="Galaxy"], .lozenge[data-type="Planetary System"], .lozenge[data-type="Star"], .lozenge[data-type="Planet"], .lozenge[data-type="Natural Satellite"] {
 				--lozenge-background: #15163a;
 				--lozenge-border: #000000;
 				--lozenge-text: #feffe8;
