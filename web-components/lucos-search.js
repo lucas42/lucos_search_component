@@ -94,7 +94,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #000083;
 			}
 			/** Temporal Types **/
-			.lozenge[data-type="Calendar"], .lozenge[data-type="Festival"], .lozenge[data-type="Month of Year"], .lozenge[data-type="Day of Week"] {
+			.lozenge[data-type="Calendar"], .lozenge[data-type="Festival"], .lozenge[data-type="Season"], .lozenge[data-type="Month of Year"], .lozenge[data-type="Day of Week"] {
 				--lozenge-background: #fffc33;
 				--lozenge-border: #7f7e00;
 				--lozenge-text: #0f0f00;
