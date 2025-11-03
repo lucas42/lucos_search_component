@@ -44,11 +44,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #6d6d6d;
 				--lozenge-text: #fff;
 			}
-			/*  Items from lucos_eolas have many types.  For now, count any type which isn't specified later as part of eolas. */
-			.lozenge[data-type] {
-				--lozenge-background: #6a00c2;
-				--lozenge-border: #44265d;
-			}
 			.lozenge[data-type="Track"] {
 				--lozenge-background: #000060;
 				--lozenge-border: #000020;
@@ -85,7 +80,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #674800;
 				--lozenge-text: #352005;
 			}
-			.lozenge[data-type="Historical Event"] {
+			.lozenge[data-type="Historical Event"], .lozenge[data-type="Memory"] {
 				--lozenge-background: #740909;
 				--lozenge-border: #470202;
 			}
@@ -99,7 +94,24 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #7f7e00;
 				--lozenge-text: #0f0f00;
 			}
-
+			/** Anthropology **/
+			.lozenge[data-type="Ethnic Group"], .lozenge[data-type="Language Family"], .lozenge[data-type="Language"] {
+				--lozenge-background: #f53b0e;
+				--lozenge-border: #7e3d2e;
+				--lozenge-text: #fff;
+			}
+			/** Technology **/
+			.lozenge[data-type="Means of Transport"] {
+				--lozenge-background: #c70f7a;
+				--lozenge-border: #8f125b;
+				--lozenge-text: #fff;
+			}
+			/** Meteorology **/
+			.lozenge[data-type="Weather"] {
+				--lozenge-background: #fff;
+				--lozenge-border: #333;
+				--lozenge-text: #000;
+			}
 
 			.lozenge.active {
 				--lozenge-border: #b00;
