@@ -90,7 +90,6 @@ class LucosLangComponent extends HTMLSpanElement {
 				}
 				if (component.hasAttribute("data-common")) {
 					const commonLangs = component.getAttribute("data-common").split(",");
-					console.log(commonLangs);
 					families.unshift({ // Put common languages as top option
 						code: 'x-common',
 						label: 'common languages',
