@@ -53,7 +53,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #033100;
 			}
 			/** Aquatic Places **/
-			.lozenge[data-type="Ocean"], .lozenge[data-type="Sea"], .lozenge[data-type="Sea Inlet"], .lozenge[data-type="River"], .lozenge[data-type="Lake"] {
+			.lozenge[data-type="Ocean"], .lozenge[data-type="Sea"], .lozenge[data-type="Sea Inlet"], .lozenge[data-type="River"], .lozenge[data-type="Lake"], .lozenge[data-type="Beach"] {
 				--lozenge-background: #0085fe;
 				--lozenge-border: #0036b1;
 			}
