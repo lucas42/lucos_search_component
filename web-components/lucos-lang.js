@@ -131,7 +131,7 @@ class LucosLangComponent extends HTMLSpanElement {
 		if (!key) throw new Error("No `data-api-key` attribute set on `lucos-search` component");
 		const response = await fetch("https://arachne.l42.eu/search?"+searchParams.toString(), {
 			headers: { 'X-TYPESENSE-API-KEY': key },
-			signal: AbortSignal.timeout(900),
+			signal: AbortSignal.timeout(2000),
 		});
 		const data = await response.json();
 		if (!response.ok) {
