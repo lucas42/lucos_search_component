@@ -89,9 +89,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-text: #0f0f00;
 			}
 			.lozenge[data-category="Anthropological"] {
-				--lozenge-background: #f53b0e;
-				--lozenge-border: #7e3d2e;
-				--lozenge-text: #fff;
+				--lozenge-background: #8affe7;
+				--lozenge-border: #068900;
+				--lozenge-text: #000000;
 			}
 			.lozenge[data-category="Technological"] {
 				--lozenge-background: #c70f7a;
