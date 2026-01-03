@@ -38,76 +38,67 @@ class LucosSearchComponent extends HTMLSpanElement {
 				border-left-color: var(--lozenge-border) !important;
 			}
 
-			/* Default colour to greys, but override based on type */
+			/* Default colour to greys, but override based on category */
 			.lozenge {
 				--lozenge-background: #555;
 				--lozenge-border: #6d6d6d;
 				--lozenge-text: #fff;
 			}
-			.lozenge[data-type="Track"] {
+			.lozenge[data-category="Musical"] {
 				--lozenge-background: #000060;
 				--lozenge-border: #000020;
 			}
-			.lozenge[data-type="Person"] {
+			.lozenge[data-category="People"] {
 				--lozenge-background: #044E00;
 				--lozenge-border: #033100;
 			}
-			/** Aquatic Places **/
-			.lozenge[data-type="Ocean"], .lozenge[data-type="Sea"], .lozenge[data-type="Sea Inlet"], .lozenge[data-type="River"], .lozenge[data-type="Lake"], .lozenge[data-type="Beach"] {
+			.lozenge[data-category="Aquatic"] {
 				--lozenge-background: #0085fe;
 				--lozenge-border: #0036b1;
 			}
-			/** Terrestrial Places **/
-			.lozenge[data-type="Archipelago"], .lozenge[data-type="Area Of Outstanding Natural Beauty"], .lozenge[data-type="Continent"], .lozenge[data-type="Historical Site"], .lozenge[data-type="Island"], .lozenge[data-type="Mountain"] {
+			.lozenge[data-category="Terrestrial"] {
 				--lozenge-background: #652c17;
 				--lozenge-border: #321200;
 			}
-			/** Cosmic Places **/
-			.lozenge[data-type="Universe"], .lozenge[data-type="Galaxy"], .lozenge[data-type="Planetary System"], .lozenge[data-type="Star"], .lozenge[data-type="Planet"], .lozenge[data-type="Natural Satellite"] {
+			.lozenge[data-category="Cosmic"] {
 				--lozenge-background: #15163a;
 				--lozenge-border: #000000;
 				--lozenge-text: #feffe8;
 			}
-			/** Human Places **/
-			.lozenge[data-type="Airport"], .lozenge[data-type="Autonomous Area"], .lozenge[data-type="City"], .lozenge[data-type="Country"], .lozenge[data-type="County"], .lozenge[data-type="Dependent Territory"], .lozenge[data-type="Historical Site"], .lozenge[data-type="Neighbourhood"], .lozenge[data-type="Province"], .lozenge[data-type="Region"], .lozenge[data-type="Road"], .lozenge[data-type="State"], .lozenge[data-type="Town"], .lozenge[data-type="Tribal Nation"], .lozenge[data-type="Village"] {
+			.lozenge[data-category="Anthropogeographical"] {
 				--lozenge-background: #aed0db;
 				--lozenge-border: #3f6674;
 				--lozenge-text: #0c1a1b;
 			}
-			/** Supernatural Places **/
-			.lozenge[data-type="Supernatural Realm"] {
+			.lozenge[data-category="Supernatural"] {
 				--lozenge-background: #f1ff5f;
 				--lozenge-border: #674800;
 				--lozenge-text: #352005;
 			}
-			.lozenge[data-type="Historical Event"], .lozenge[data-type="Memory"] {
+			.lozenge[data-category="Historical"] {
 				--lozenge-background: #740909;
 				--lozenge-border: #470202;
 			}
-			.lozenge[data-type="Number"] {
+			.lozenge[data-category="Mathematical"] {
 				--lozenge-background: #0000ff;
 				--lozenge-border: #000083;
 			}
-			/** Temporal Types **/
-			.lozenge[data-type="Calendar"], .lozenge[data-type="Festival"], .lozenge[data-type="Season"], .lozenge[data-type="Month"], .lozenge[data-type="Day of the Week"] {
+			.lozenge[data-category="Temporal"] {
 				--lozenge-background: #fffc33;
 				--lozenge-border: #7f7e00;
 				--lozenge-text: #0f0f00;
 			}
-			/** Anthropology **/
-			.lozenge[data-type="Ethnic Group"], .lozenge[data-type="Language Family"], .lozenge[data-type="Language"] {
+			.lozenge[data-category="Anthropological"] {
 				--lozenge-background: #f53b0e;
 				--lozenge-border: #7e3d2e;
 				--lozenge-text: #fff;
 			}
-			/** Technology **/
-			.lozenge[data-type="Means of Transport"] {
+			.lozenge[data-category="Technological"] {
 				--lozenge-background: #c70f7a;
 				--lozenge-border: #8f125b;
 				--lozenge-text: #fff;
 			}
-			/** Meteorology **/
-			.lozenge[data-type="Weather"] {
+			.lozenge[data-category="Meteorological"] {
 				--lozenge-background: #fff;
 				--lozenge-border: #333;
 				--lozenge-text: #000;
@@ -197,10 +188,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 						}
 					}
 					label = label.replace(` (${data.type})`,""); // No need to include any type disambiguation in label, as types are always shown
-					return `<div>${label}${alt_label}<span class="type lozenge" data-type="${escape(data.type)}">${escape(data.type)}</span></div>`;
+					return `<div>${label}${alt_label}<span class="type lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}">${escape(data.type)}</span></div>`;
 				},
 				item: function(data, escape) {
-					return `<div class="lozenge" data-type="${escape(data.type)}"><a href="${data.id}" target="_blank">${escape(data.pref_label)}</a></div>`;
+					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data.id}" target="_blank">${escape(data.pref_label)}</a></div>`;
 				},
 			},
 		});
@@ -215,7 +206,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		searchParams.set('query_by_weights', "10,8,3,1");
 		searchParams.set('sort_by', "_text_match:desc,pref_label:asc");
 		searchParams.set('prioritize_num_matching_fields', false);
-		searchParams.set('include_fields', "id,pref_label,type,labels");
+		searchParams.set('include_fields', "id,pref_label,type,category,labels");
 		searchParams.set('enable_highlight_v1', false);
 		searchParams.set('highlight_start_tag', '<span class="highlight">')
 		searchParams.set('highlight_end_tag', '</span>');
