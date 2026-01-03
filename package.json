@@ -23,9 +23,9 @@
   },
   "homepage": "https://github.com/lucas42/lucos_search_component#readme",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "rollup": "^4.52.4",
-    "rollup-plugin-import-css": "^4.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.54.0",
+    "rollup-plugin-import-css": "^4.1.2",
     "tom-select": "^2.4.3",
     "webpack-cli": "^6.0.1"
   }
