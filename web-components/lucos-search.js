@@ -80,8 +80,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #470202;
 			}
 			.lozenge[data-category="Mathematical"] {
-				--lozenge-background: #0000ff;
-				--lozenge-border: #000083;
+				--lozenge-background: #f53b0e;
+				--lozenge-border: #7e3d2e;
+				--lozenge-text: #fff;
 			}
 			.lozenge[data-category="Temporal"] {
 				--lozenge-background: #fffc33;
