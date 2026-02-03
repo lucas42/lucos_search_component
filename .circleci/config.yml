@@ -4,6 +4,6 @@ orbs:
 
 workflows:
   version: 2
-  publish:
+  release:
     jobs:
-      - lucos/publish-npm
+      - lucos/release-npm
