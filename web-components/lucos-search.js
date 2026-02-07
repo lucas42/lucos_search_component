@@ -104,6 +104,16 @@ class LucosSearchComponent extends HTMLSpanElement {
 				--lozenge-border: #333;
 				--lozenge-text: #000;
 			}
+			.lozenge[data-category="Literary"] {
+				--lozenge-background: #a22400;
+				--lozenge-border: #5e1500;
+				--lozenge-text: #fff;
+			}
+			.lozenge[data-category="Dramaturgical"] {
+				--lozenge-background: #5f0086;
+				--lozenge-border: #59007d;
+				--lozenge-text: #fff;
+			}
 
 			.lozenge.active {
 				--lozenge-border: #b00;
