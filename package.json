@@ -28,5 +28,8 @@
     "rollup-plugin-import-css": "^4.1.2",
     "tom-select": "^2.4.3",
     "webpack-cli": "^6.0.1"
+  },
+  "overrides": {
+    "serialize-javascript": ">=7.0.3"
   }
 }
