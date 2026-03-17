@@ -256,9 +256,15 @@ class LucosSearchComponent extends HTMLSpanElement {
 			error.userMessage = userMessage;
 			throw error;
 		}
-		const data = await response.json();
 		if (!response.ok) {
-			const error = new Error(`Received ${response.status} error from search endpoint: ${data["message"]}`);
+			let detail;
+			try {
+				const data = await response.json();
+				detail = data["message"];
+			} catch(_) {
+				// Non-JSON body (e.g. nginx HTML error page) — detail stays undefined
+			}
+			const error = new Error(`Received ${response.status} error from search endpoint: ${detail}`);
 			if (response.status === 502 || response.status === 503) {
 				error.userMessage = 'Search backend is currently unavailable — please try again later.';
 			} else {
@@ -266,6 +272,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 			}
 			throw error;
 		}
+		const data = await response.json();
 		const results = data.hits.map(result => {
 			return {...result, ...result.document}
 		});
