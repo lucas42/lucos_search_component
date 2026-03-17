@@ -16,8 +16,22 @@ class LucosSearchComponent extends HTMLSpanElement {
 			shadow.appendChild(tomStyle);
 		}
 
+		const errorMessage = document.createElement('div');
+		errorMessage.setAttribute('class', 'search-error');
+		errorMessage.setAttribute('hidden', '');
+		shadow.appendChild(errorMessage);
+
 		const mainStyle = document.createElement('style');
 		mainStyle.textContent = `
+			.search-error {
+				color: #a00;
+				font-size: 0.85em;
+				margin-top: 4px;
+				padding: 4px 6px;
+				border: 1px solid #e0a0a0;
+				background: #fff5f5;
+				border-radius: 3px;
+			}
 			.lozenge {
 				align-items: center;
 				vertical-align: baseline;
@@ -143,6 +157,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 			closeAfterSelect: true,
 			highlight: false, // Will use typesense's hightlight (as it can consider other fields)
 			load: async function(query, callback) {
+				errorMessage.setAttribute('hidden', '');
 				const queryParams = new URLSearchParams({
 					q: query,
 				});
@@ -151,9 +166,15 @@ class LucosSearchComponent extends HTMLSpanElement {
 				} else if (component.getAttribute("data-exclude_types")) {
 					queryParams.set("filter_by",`type:![${component.getAttribute("data-exclude_types")}]`);
 				}
-				const results = await component.searchRequest(queryParams);
-				this.clearOptions();
-				callback(results);
+				try {
+					const results = await component.searchRequest(queryParams);
+					this.clearOptions();
+					callback(results);
+				} catch(err) {
+					callback([]);
+					errorMessage.textContent = err.userMessage || 'Search is currently unavailable — please try again later.';
+					errorMessage.removeAttribute('hidden');
+				}
 			},
 			plugins: {
 				remove_button:{
@@ -221,13 +242,29 @@ class LucosSearchComponent extends HTMLSpanElement {
 		searchParams.set('enable_highlight_v1', false);
 		searchParams.set('highlight_start_tag', '<span class="highlight">')
 		searchParams.set('highlight_end_tag', '</span>');
-		const response = await fetch("https://arachne.l42.eu/search?"+searchParams.toString(), {
-			headers: { 'X-TYPESENSE-API-KEY': key },
-			signal: AbortSignal.timeout(2000),
-		});
+		let response;
+		try {
+			response = await fetch("https://arachne.l42.eu/search?"+searchParams.toString(), {
+				headers: { 'X-TYPESENSE-API-KEY': key },
+				signal: AbortSignal.timeout(8000),
+			});
+		} catch(err) {
+			const userMessage = err.name === 'TimeoutError'
+				? 'Search timed out — please try again later.'
+				: 'Search is currently unavailable — please try again later.';
+			const error = new Error(`Search request failed: ${err.message}`);
+			error.userMessage = userMessage;
+			throw error;
+		}
 		const data = await response.json();
 		if (!response.ok) {
-			throw new Error(`Recieved ${response.status} error from search endpoint: ${data["message"]}`);
+			const error = new Error(`Received ${response.status} error from search endpoint: ${data["message"]}`);
+			if (response.status === 502 || response.status === 503) {
+				error.userMessage = 'Search backend is currently unavailable — please try again later.';
+			} else {
+				error.userMessage = 'Search encountered an error — please try again later.';
+			}
+			throw error;
 		}
 		const results = data.hits.map(result => {
 			return {...result, ...result.document}
