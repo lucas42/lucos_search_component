@@ -206,7 +206,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				// In language mode, fetch families and register option groups
 				if (component.isLanguageMode) {
 					const families = await component.getLanguageFamilies();
-					this.addOptionGroup('qli', { label: 'language isolate' });
+					this.addOptionGroup('qli', { label: 'Language Isolate' });
 					families.forEach(family => {
 						this.addOptionGroup(family.code, { label: family.label });
 					});
