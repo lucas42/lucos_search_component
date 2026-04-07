@@ -3,7 +3,7 @@ import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 
 class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key','data-types','data-exclude-types','data-no-lang'];
+		return ['data-api-key','data-types','data-exclude-types','data-no-lang','data-common'];
 	}
 	constructor() {
 		super();
@@ -151,7 +151,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		if (!selector) throw new Error("Can't find select element in lucos-search");
 		selector.setAttribute("multiple", "multiple");
 		new TomSelect(selector, {
-			...(component.isLanguageMode ? { optgroupField: 'lang_family', lockOptgroupOrder: true } : {}),
+			...(component.isLanguageMode || component.getAttribute("data-common") ? { optgroupField: 'lang_family', lockOptgroupOrder: true } : {}),
 			valueField: 'id',
 			labelField: 'pref_label',
 			searchField: [],
@@ -175,11 +175,17 @@ class LucosSearchComponent extends HTMLSpanElement {
 					queryParams.set("filter_by",`type:![${component.getAttribute("data-exclude_types")}]`);
 				}
 				try {
-					const results = await component.searchRequest(queryParams, abortController.signal);
+					let results = await component.searchRequest(queryParams, abortController.signal);
 					if (abortController.signal.aborted) return;
 					this.clearOptions();
 					if (component.isLanguageMode) {
 						results.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
+					}
+					// Remove common items from results to avoid duplication (they're always shown separately)
+					if (component._commonOptions) {
+						const commonIds = new Set(component._commonOptions.map(o => o.id));
+						results = results.filter(r => !commonIds.has(r.id));
+						component._commonOptions.forEach(opt => this.addOption(opt));
 					}
 					const noLang = component.noLangOption;
 					if (noLang) results.unshift(noLang);
@@ -205,6 +211,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 				this.clearOptions();
 				const noLang = component.noLangOption;
 				if (noLang) this.addOption(noLang);
+				// Re-add common items so they're visible without typing (groups persist, options don't)
+				if (component._commonOptions) {
+					component._commonOptions.forEach(opt => this.addOption(opt));
+				}
 			},
 			// On startup, update any existing options with latest data from search
 			onInitialize: async function() {
@@ -212,6 +222,19 @@ class LucosSearchComponent extends HTMLSpanElement {
 				const noLang = component.noLangOption;
 				// Always make the no-lang option available for new selections
 				if (noLang) this.addOption(noLang);
+				// Fetch and register common items (x-common group goes first)
+				const commonIds = component.commonIds;
+				if (commonIds.length > 0) {
+					this.addOptionGroup('x-common', { label: 'common' });
+					const commonParams = new URLSearchParams({
+						q: '*',
+						filter_by: `id:[${commonIds.join(",")}]`,
+						per_page: commonIds.length,
+					});
+					const commonResults = await component.searchRequest(commonParams);
+					component._commonOptions = commonResults.map(r => ({...r, lang_family: 'x-common'}));
+					component._commonOptions.forEach(opt => this.addOption(opt));
+				}
 				// In language mode, fetch families and register option groups
 				if (component.isLanguageMode) {
 					const families = await component.getLanguageFamilies();
@@ -221,8 +244,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 					});
 				}
 				if (ids.length < 1) return;
-				// Fetch real options from Typesense, excluding the synthetic no-lang option
-				const idsToFetch = noLang ? ids.filter(id => id !== noLang.id) : ids;
+				// Fetch real options from Typesense, excluding the synthetic no-lang option and common items
+				const excludeIds = new Set([...(noLang ? [noLang.id] : []), ...commonIds]);
+				const idsToFetch = ids.filter(id => !excludeIds.has(id));
 				if (idsToFetch.length > 0) {
 					const searchParams = new URLSearchParams({
 						q: '*',
@@ -238,6 +262,12 @@ class LucosSearchComponent extends HTMLSpanElement {
 				// Update any pre-selected no-lang option with the synthetic data
 				if (noLang && ids.includes(noLang.id)) {
 					this.updateOption(noLang.id, noLang);
+				}
+				// Update any pre-selected common items with fresh data
+				if (component._commonOptions) {
+					component._commonOptions.forEach(opt => {
+						if (ids.includes(opt.id)) this.updateOption(opt.id, opt);
+					});
 				}
 			},
 			onItemSelect: function (item) {
@@ -284,6 +314,11 @@ class LucosSearchComponent extends HTMLSpanElement {
 		const types = this.getAttribute("data-types");
 		if (!types) return false;
 		return types.split(",").map(t => t.trim()).includes("Language");
+	}
+	get commonIds() {
+		const common = this.getAttribute("data-common");
+		if (!common) return [];
+		return common.split(",").map(s => s.trim()).filter(Boolean);
 	}
 	async getLanguageFamilies() {
 		if (this._langFamilies) return this._langFamilies;
