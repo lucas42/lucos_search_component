@@ -178,9 +178,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 					let results = await component.searchRequest(queryParams, abortController.signal);
 					if (abortController.signal.aborted) return;
 					this.clearOptions();
-					if (component.isLanguageMode) {
-						results.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
-					}
 					// Remove common items from results to avoid duplication (they're always shown separately)
 					if (component._commonOptions) {
 						const commonIds = new Set(component._commonOptions.map(o => o.id));
@@ -243,7 +240,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 				// In language mode, fetch families and register option groups
 				if (component.isLanguageMode) {
 					const families = await component.getLanguageFamilies();
-					this.addOptionGroup('qli', { label: 'Language Isolate' });
 					families.forEach(family => {
 						this.addOptionGroup(family.code, { label: family.label });
 					});
@@ -260,7 +256,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 					});
 					const results = await component.searchRequest(searchParams);
 					results.forEach(result => {
-						if (component.isLanguageMode && !result.lang_family) result.lang_family = 'qli';
 						this.updateOption(result.id, result);
 					});
 				}
