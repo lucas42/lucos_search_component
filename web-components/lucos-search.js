@@ -158,6 +158,13 @@ class LucosSearchComponent extends HTMLSpanElement {
 			closeAfterSelect: true,
 			highlight: false, // Will use typesense's hightlight (as it can consider other fields)
 			load: async function(query, callback) {
+				// Cancel any in-flight search so stale responses don't overwrite newer results
+				if (component._searchAbortController) {
+					component._searchAbortController.abort();
+				}
+				const abortController = new AbortController();
+				component._searchAbortController = abortController;
+
 				errorMessage.setAttribute('hidden', '');
 				const queryParams = new URLSearchParams({
 					q: query,
@@ -168,7 +175,8 @@ class LucosSearchComponent extends HTMLSpanElement {
 					queryParams.set("filter_by",`type:![${component.getAttribute("data-exclude_types")}]`);
 				}
 				try {
-					const results = await component.searchRequest(queryParams);
+					const results = await component.searchRequest(queryParams, abortController.signal);
+					if (abortController.signal.aborted) return;
 					this.clearOptions();
 					if (component.isLanguageMode) {
 						results.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
@@ -177,6 +185,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 					if (noLang) results.unshift(noLang);
 					callback(results);
 				} catch(err) {
+					if (err.name === 'AbortError') return;
 					callback([]);
 					errorMessage.textContent = err.userMessage || 'Search is currently unavailable — please try again later.';
 					errorMessage.removeAttribute('hidden');
@@ -309,7 +318,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		}
 		return this._langFamilies;
 	}
-	async searchRequest(searchParams) {
+	async searchRequest(searchParams, abortSignal = null) {
 		const key = this.getAttribute("data-api-key");
 		if (!key) throw new Error("No `data-api-key` attribute set on `lucos-search` component");
 		searchParams.set('query_by', "pref_label,labels,description,lyrics");
@@ -320,13 +329,16 @@ class LucosSearchComponent extends HTMLSpanElement {
 		searchParams.set('enable_highlight_v1', false);
 		searchParams.set('highlight_start_tag', '<span class="highlight">')
 		searchParams.set('highlight_end_tag', '</span>');
+		const timeoutSignal = AbortSignal.timeout(8000);
+		const signal = abortSignal ? AbortSignal.any([timeoutSignal, abortSignal]) : timeoutSignal;
 		let response;
 		try {
 			response = await fetch("https://arachne.l42.eu/search?"+searchParams.toString(), {
 				headers: { 'X-TYPESENSE-API-KEY': key },
-				signal: AbortSignal.timeout(8000),
+				signal,
 			});
 		} catch(err) {
+			if (err.name === 'AbortError') throw err; // Pass through so caller can detect cancellation
 			const userMessage = err.name === 'TimeoutError'
 				? 'Search timed out — please try again later.'
 				: 'Search is currently unavailable — please try again later.';
