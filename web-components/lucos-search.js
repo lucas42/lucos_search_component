@@ -188,7 +188,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 						component._commonOptions.forEach(opt => this.addOption(opt));
 					}
 					const noLang = component.noLangOption;
-					if (noLang) results.unshift(noLang);
+					// Don't add noLang as standalone if it's already covered by a common item
+					const noLangIsCommon = noLang && component._commonOptions && component._commonOptions.some(o => o.id === noLang.id);
+					if (noLang && !noLangIsCommon) results.unshift(noLang);
 					callback(results);
 				} catch(err) {
 					if (err.name === 'AbortError') return;
@@ -209,19 +211,19 @@ class LucosSearchComponent extends HTMLSpanElement {
 			},
 			onFocus: function() {
 				this.clearOptions();
-				const noLang = component.noLangOption;
-				if (noLang) this.addOption(noLang);
-				// Re-add common items so they're visible without typing (groups persist, options don't)
+				// Re-add common items first so they own any shared IDs (e.g. zxx in both data-no-lang and data-common)
 				if (component._commonOptions) {
 					component._commonOptions.forEach(opt => this.addOption(opt));
 				}
+				const noLang = component.noLangOption;
+				// Skip noLang if its ID is already a common item (would be silently discarded as a duplicate)
+				const noLangIsCommon = noLang && component._commonOptions && component._commonOptions.some(o => o.id === noLang.id);
+				if (noLang && !noLangIsCommon) this.addOption(noLang);
 			},
 			// On startup, update any existing options with latest data from search
 			onInitialize: async function() {
 				const ids = Object.keys(this.options);
 				const noLang = component.noLangOption;
-				// Always make the no-lang option available for new selections
-				if (noLang) this.addOption(noLang);
 				// Fetch and register common items (x-common group goes first)
 				const commonIds = component.commonIds;
 				if (commonIds.length > 0) {
@@ -235,6 +237,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 					component._commonOptions = commonResults.map(r => ({...r, lang_family: 'x-common'}));
 					component._commonOptions.forEach(opt => this.addOption(opt));
 				}
+				// Add noLang option now (after common items) so we can check for overlap
+				const noLangIsCommon = noLang && component._commonOptions && component._commonOptions.some(o => o.id === noLang.id);
+				if (noLang && !noLangIsCommon) this.addOption(noLang);
 				// In language mode, fetch families and register option groups
 				if (component.isLanguageMode) {
 					const families = await component.getLanguageFamilies();
