@@ -303,6 +303,37 @@ class LucosSearchComponent extends HTMLSpanElement {
 			shadow.append(selector.nextElementSibling);
 		}
 	}
+	connectedCallback() {
+		const form = this.closest('form');
+		if (!form) return;
+		this._form = form;
+		this._formdataHandler = (event) => {
+			const selector = this.querySelector('select');
+			if (!selector || !selector.name) return;
+			const ts = selector.tomselect;
+			if (!ts) return;
+			const name = selector.name;
+			const values = ts.getValue();
+			const valueArray = Array.isArray(values) ? values : (values ? [values] : []);
+			// Remove the native select values so consumers only receive the structured pairs
+			event.formData.delete(name);
+			valueArray.forEach((id, idx) => {
+				const option = ts.options[id];
+				if (option) {
+					event.formData.append(`${name}[${idx}][uri]`, id);
+					event.formData.append(`${name}[${idx}][name]`, option.pref_label);
+				}
+			});
+		};
+		form.addEventListener('formdata', this._formdataHandler);
+	}
+	disconnectedCallback() {
+		if (this._form && this._formdataHandler) {
+			this._form.removeEventListener('formdata', this._formdataHandler);
+			this._form = null;
+			this._formdataHandler = null;
+		}
+	}
 	get noLangOption() {
 		const label = this.getAttribute("data-no-lang");
 		if (!label) return null;
