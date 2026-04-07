@@ -151,6 +151,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		if (!selector) throw new Error("Can't find select element in lucos-search");
 		selector.setAttribute("multiple", "multiple");
 		new TomSelect(selector, {
+			...(component.isLanguageMode ? { optgroupField: 'lang_family', lockOptgroupOrder: true } : {}),
 			valueField: 'id',
 			labelField: 'pref_label',
 			searchField: [],
@@ -169,6 +170,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 				try {
 					const results = await component.searchRequest(queryParams);
 					this.clearOptions();
+					if (component.isLanguageMode) {
+						results.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
+					}
 					const noLang = component.noLangOption;
 					if (noLang) results.unshift(noLang);
 					callback(results);
@@ -199,6 +203,14 @@ class LucosSearchComponent extends HTMLSpanElement {
 				const noLang = component.noLangOption;
 				// Always make the no-lang option available for new selections
 				if (noLang) this.addOption(noLang);
+				// In language mode, fetch families and register option groups
+				if (component.isLanguageMode) {
+					const families = await component.getLanguageFamilies();
+					this.addOptionGroup('qli', { label: 'language isolate' });
+					families.forEach(family => {
+						this.addOptionGroup(family.code, { label: family.label });
+					});
+				}
 				if (ids.length < 1) return;
 				// Fetch real options from Typesense, excluding the synthetic no-lang option
 				const idsToFetch = noLang ? ids.filter(id => id !== noLang.id) : ids;
@@ -210,6 +222,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 					});
 					const results = await component.searchRequest(searchParams);
 					results.forEach(result => {
+						if (component.isLanguageMode && !result.lang_family) result.lang_family = 'qli';
 						this.updateOption(result.id, result);
 					});
 				}
@@ -258,6 +271,40 @@ class LucosSearchComponent extends HTMLSpanElement {
 			highlight: {},
 		};
 	}
+	get isLanguageMode() {
+		const types = this.getAttribute("data-types");
+		if (!types) return false;
+		return types.split(",").map(t => t.trim()).includes("Language");
+	}
+	async getLanguageFamilies() {
+		if (this._langFamilies) return this._langFamilies;
+		const key = this.getAttribute("data-api-key");
+		if (!key) { this._langFamilies = []; return []; }
+		const searchParams = new URLSearchParams({
+			q: '*',
+			filter_by: 'type:=Language Family',
+			query_by: 'pref_label',
+			include_fields: 'id,pref_label',
+			sort_by: 'pref_label:asc',
+			enable_highlight_v1: false,
+			per_page: 250,
+		});
+		try {
+			const response = await fetch("https://arachne.l42.eu/search?" + searchParams.toString(), {
+				headers: { 'X-TYPESENSE-API-KEY': key },
+				signal: AbortSignal.timeout(8000),
+			});
+			if (!response.ok) { this._langFamilies = []; return []; }
+			const data = await response.json();
+			this._langFamilies = data.hits.map(hit => ({
+				code: hit.document.id.split("/").filter(Boolean).pop(),
+				label: hit.document.pref_label,
+			}));
+		} catch (_) {
+			this._langFamilies = [];
+		}
+		return this._langFamilies;
+	}
 	async searchRequest(searchParams) {
 		const key = this.getAttribute("data-api-key");
 		if (!key) throw new Error("No `data-api-key` attribute set on `lucos-search` component");
@@ -265,7 +312,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		searchParams.set('query_by_weights', "10,8,3,1");
 		searchParams.set('sort_by', "_text_match:desc,pref_label:asc");
 		searchParams.set('prioritize_num_matching_fields', false);
-		searchParams.set('include_fields', "id,pref_label,type,category,labels");
+		searchParams.set('include_fields', "id,pref_label,type,category,labels,lang_family");
 		searchParams.set('enable_highlight_v1', false);
 		searchParams.set('highlight_start_tag', '<span class="highlight">')
 		searchParams.set('highlight_end_tag', '</span>');
