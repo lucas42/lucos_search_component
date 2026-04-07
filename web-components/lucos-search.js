@@ -272,13 +272,22 @@ class LucosSearchComponent extends HTMLSpanElement {
 				}
 				// Preload all matching options (after groups are registered so options slot correctly)
 				if (component.hasAttribute("data-preload")) {
-					const preloadParams = new URLSearchParams({ q: '*', per_page: 250 });
-					if (component.getAttribute("data-types")) {
-						preloadParams.set("filter_by", `type:[${component.getAttribute("data-types")}]`);
-					} else if (component.getAttribute("data-exclude_types")) {
-						preloadParams.set("filter_by", `type:![${component.getAttribute("data-exclude_types")}]`);
+					const filterValue = component.getAttribute("data-types")
+						? `type:=[${component.getAttribute("data-types")}]`
+						: component.getAttribute("data-exclude_types")
+							? `type:!=[${component.getAttribute("data-exclude_types")}]`
+							: null;
+					// Paginate through all results — Typesense caps per_page at 250
+					const preloaded = [];
+					let page = 1;
+					while (true) {
+						const preloadParams = new URLSearchParams({ q: '*', per_page: 250, page });
+						if (filterValue) preloadParams.set("filter_by", filterValue);
+						const pageResults = await component.searchRequest(preloadParams);
+						preloaded.push(...pageResults);
+						if (pageResults.length < 250) break;
+						page++;
 					}
-					const preloaded = await component.searchRequest(preloadParams);
 					if (component.isLanguageMode) {
 						preloaded.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
 					}
