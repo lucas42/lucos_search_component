@@ -253,7 +253,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 			id: 'https://eolas.l42.eu/metadata/language/zxx/',
 			pref_label: label,
 			type: 'Language',
-			category: '',
+			category: 'Anthropological',
 			labels: [],
 			highlight: {},
 		};
