@@ -273,17 +273,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 						: component.getAttribute("data-exclude_types")
 							? `type:!=[${component.getAttribute("data-exclude_types")}]`
 							: null;
-					// Paginate through all results — Typesense caps per_page at 250
-					const preloaded = [];
-					let page = 1;
-					while (true) {
-						const preloadParams = new URLSearchParams({ q: '*', per_page: 250, page });
-						if (filterValue) preloadParams.set("filter_by", filterValue);
-						const pageResults = await component.searchRequest(preloadParams);
-						preloaded.push(...pageResults);
-						if (pageResults.length < 250) break;
-						page++;
-					}
+					// per_page: 250 acts as an upper bound — data-preload is intended for finite datasets
+					const preloadParams = new URLSearchParams({ q: '*', per_page: 250 });
+					if (filterValue) preloadParams.set("filter_by", filterValue);
+					const preloaded = await component.searchRequest(preloadParams);
 					component._preloadedOptions = preloaded;
 					const commonSet = new Set((component._commonOptions || []).map(o => o.id));
 					preloaded.filter(r => !commonSet.has(r.id)).forEach(r => this.addOption(r));
