@@ -297,6 +297,11 @@ class LucosSearchComponent extends HTMLSpanElement {
 			if (!response.ok) { this._langFamilies = []; return []; }
 			const data = await response.json();
 			this._langFamilies = data.hits.map(hit => ({
+				// The lang_family field on Language documents in Typesense stores the last
+				// non-empty path segment of the Language Family URI (e.g. "west-germanic"
+				// for https://eolas.l42.eu/metadata/language-family/west-germanic/).
+				// filter(Boolean) handles trailing slashes in URIs.
+				// This is consistent with lucos-lang's family code extraction.
 				code: hit.document.id.split("/").filter(Boolean).pop(),
 				label: hit.document.pref_label,
 			}));
