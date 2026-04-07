@@ -170,9 +170,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 					q: query,
 				});
 				if (component.getAttribute("data-types")) {
-					queryParams.set("filter_by",`type:[${component.getAttribute("data-types")}]`);
+					queryParams.set("filter_by",`type:=[${component.getAttribute("data-types")}]`);
 				} else if (component.getAttribute("data-exclude_types")) {
-					queryParams.set("filter_by",`type:![${component.getAttribute("data-exclude_types")}]`);
+					queryParams.set("filter_by",`type:!=[${component.getAttribute("data-exclude_types")}]`);
 				}
 				try {
 					let results = await component.searchRequest(queryParams, abortController.signal);
