@@ -258,11 +258,13 @@ class LucosSearchComponent extends HTMLSpanElement {
 			const name = selector.name;
 			const values = ts.getValue();
 			const valueArray = Array.isArray(values) ? values : (values ? [values] : []);
-			valueArray.forEach(id => {
+			// Remove the native select values so consumers only receive the structured pairs
+			event.formData.delete(name);
+			valueArray.forEach((id, idx) => {
 				const option = ts.options[id];
 				if (option) {
-					event.formData.append(`${name}_uris[]`, id);
-					event.formData.append(`${name}_names[]`, option.pref_label);
+					event.formData.append(`${name}[${idx}][uri]`, id);
+					event.formData.append(`${name}[${idx}][name]`, option.pref_label);
 				}
 			});
 		};
