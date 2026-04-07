@@ -227,7 +227,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				// Fetch and register common items (x-common group goes first)
 				const commonIds = component.commonIds;
 				if (commonIds.length > 0) {
-					this.addOptionGroup('x-common', { label: 'common' });
+					this.addOptionGroup('x-common', { label: 'Common' });
 					const commonParams = new URLSearchParams({
 						q: '*',
 						filter_by: `id:[${commonIds.join(",")}]`,
