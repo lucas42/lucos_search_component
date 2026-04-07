@@ -3,7 +3,7 @@ import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 
 class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key','data-types','data-exclude-types'];
+		return ['data-api-key','data-types','data-exclude-types','data-no-lang'];
 	}
 	constructor() {
 		super();
@@ -169,6 +169,8 @@ class LucosSearchComponent extends HTMLSpanElement {
 				try {
 					const results = await component.searchRequest(queryParams);
 					this.clearOptions();
+					const noLang = component.noLangOption;
+					if (noLang) results.unshift(noLang);
 					callback(results);
 				} catch(err) {
 					callback([]);
@@ -188,20 +190,33 @@ class LucosSearchComponent extends HTMLSpanElement {
 			},
 			onFocus: function() {
 				this.clearOptions();
+				const noLang = component.noLangOption;
+				if (noLang) this.addOption(noLang);
 			},
 			// On startup, update any existing options with latest data from search
 			onInitialize: async function() {
 				const ids = Object.keys(this.options);
+				const noLang = component.noLangOption;
+				// Always make the no-lang option available for new selections
+				if (noLang) this.addOption(noLang);
 				if (ids.length < 1) return;
-				const searchParams = new URLSearchParams({
-					q: '*',
-					filter_by: `id:[${ids.join(",")}]`,
-					per_page: ids.length,
-				});
-				const results = await component.searchRequest(searchParams);
-				results.forEach(result => {
-					this.updateOption(result.id, result);
-				});
+				// Fetch real options from Typesense, excluding the synthetic no-lang option
+				const idsToFetch = noLang ? ids.filter(id => id !== noLang.id) : ids;
+				if (idsToFetch.length > 0) {
+					const searchParams = new URLSearchParams({
+						q: '*',
+						filter_by: `id:[${idsToFetch.join(",")}]`,
+						per_page: idsToFetch.length,
+					});
+					const results = await component.searchRequest(searchParams);
+					results.forEach(result => {
+						this.updateOption(result.id, result);
+					});
+				}
+				// Update any pre-selected no-lang option with the synthetic data
+				if (noLang && ids.includes(noLang.id)) {
+					this.updateOption(noLang.id, noLang);
+				}
 			},
 			onItemSelect: function (item) {
 				// Tom-select prevents clicking on link in an item to work as normal, so force it here
@@ -230,6 +245,18 @@ class LucosSearchComponent extends HTMLSpanElement {
 		if (selector.nextElementSibling) {
 			shadow.append(selector.nextElementSibling);
 		}
+	}
+	get noLangOption() {
+		const label = this.getAttribute("data-no-lang");
+		if (!label) return null;
+		return {
+			id: 'https://eolas.l42.eu/metadata/language/zxx/',
+			pref_label: label,
+			type: 'Language',
+			category: 'Anthropological',
+			labels: [],
+			highlight: {},
+		};
 	}
 	async searchRequest(searchParams) {
 		const key = this.getAttribute("data-api-key");
