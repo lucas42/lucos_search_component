@@ -349,7 +349,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 							alt_label = ` <span class="alt-label">(${matched_label.snippet})</span>`;
 						}
 					}
-					label = label.replace(` (${data.type})`,""); // No need to include any type disambiguation in label, as types are always shown
+					label = label.replace(` (${data.type})`,""); // No need to include any type disambiguation in label, as the type lozenge is shown when multiple types are configured
 					const dataTypes = component.getAttribute("data-types");
 					const singleType = dataTypes && dataTypes.split(",").filter(t => t.trim()).length === 1;
 					const typeLozenge = singleType ? "" : `<span class="type lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}">${escape(data.type)}</span>`;
