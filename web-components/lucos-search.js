@@ -180,7 +180,15 @@ class LucosSearchComponent extends HTMLSpanElement {
 						: [...component._preloadedOptions];
 					results = results.filter(r => !commonSet.has(r.id));
 					this.clearOptions();
-					if (component._commonOptions) component._commonOptions.forEach(opt => this.addOption(opt));
+					if (component._commonOptions) {
+						const filteredCommon = q
+							? component._commonOptions.filter(o =>
+								o.pref_label.toLowerCase().includes(q) ||
+								(o.labels && o.labels.some(l => l.toLowerCase().includes(q)))
+							  )
+							: component._commonOptions;
+						filteredCommon.forEach(opt => this.addOption(opt));
+					}
 					if (noLang && !noLangIsCommon) results.unshift(noLang);
 					callback(results);
 					return;
@@ -197,10 +205,17 @@ class LucosSearchComponent extends HTMLSpanElement {
 					let results = await component.searchRequest(queryParams, abortController.signal);
 					if (abortController.signal.aborted) return;
 					this.clearOptions();
-					// Remove common items from results to avoid duplication (they're always shown separately)
+					// Remove common items from results to avoid duplication; filter by query when non-empty
 					if (component._commonOptions) {
 						results = results.filter(r => !commonSet.has(r.id));
-						component._commonOptions.forEach(opt => this.addOption(opt));
+						const q = query.toLowerCase();
+						const filteredCommon = q
+							? component._commonOptions.filter(o =>
+								o.pref_label.toLowerCase().includes(q) ||
+								(o.labels && o.labels.some(l => l.toLowerCase().includes(q)))
+							  )
+							: component._commonOptions;
+						filteredCommon.forEach(opt => this.addOption(opt));
 					}
 					// Don't add noLang as standalone if it's already covered by a common item
 					if (noLang && !noLangIsCommon) results.unshift(noLang);
