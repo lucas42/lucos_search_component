@@ -350,7 +350,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 						}
 					}
 					label = label.replace(` (${data.type})`,""); // No need to include any type disambiguation in label, as types are always shown
-					return `<div>${label}${alt_label}<span class="type lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}">${escape(data.type)}</span></div>`;
+					const dataTypes = component.getAttribute("data-types");
+					const singleType = dataTypes && dataTypes.split(",").filter(t => t.trim()).length === 1;
+					const typeLozenge = singleType ? "" : `<span class="type lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}">${escape(data.type)}</span>`;
+					return `<div>${label}${alt_label}${typeLozenge}</div>`;
 				},
 				item: function(data, escape) {
 					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data.id}" target="_blank">${escape(data.pref_label)}</a></div>`;
