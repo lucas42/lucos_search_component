@@ -197,9 +197,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 					let results = await component.searchRequest(queryParams, abortController.signal);
 					if (abortController.signal.aborted) return;
 					this.clearOptions();
-					if (component.isLanguageMode) {
-						results.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
-					}
 					// Remove common items from results to avoid duplication (they're always shown separately)
 					if (component._commonOptions) {
 						results = results.filter(r => !commonSet.has(r.id));
@@ -257,12 +254,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 					});
 					const commonResults = await component.searchRequest(commonParams);
 					component._commonOptions = commonResults.map(r => ({...r, lang_family: 'x-common'}));
-					// If the noLang item (zxx) is in common, apply the custom label from data-no-lang
-					// so it shows the user's chosen label rather than the Typesense pref_label
-					if (noLang) {
-						component._commonOptions = component._commonOptions.map(o =>
-							o.id === noLang.id ? {...o, pref_label: noLang.pref_label} : o
-						);
+					// noLang (zxx) doesn't exist in Typesense, so add it synthetically if it's listed in data-common
+					if (noLang && component.commonIds.includes(noLang.id)) {
+						component._commonOptions.push({...noLang, lang_family: 'x-common'});
 					}
 					component._commonOptions.forEach(opt => this.addOption(opt));
 				}
@@ -272,7 +266,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 				// In language mode, fetch families and register option groups
 				if (component.isLanguageMode) {
 					const families = await component.getLanguageFamilies();
-					this.addOptionGroup('qli', { label: 'Language Isolate' });
 					families.forEach(family => {
 						this.addOptionGroup(family.code, { label: family.label });
 					});
@@ -288,9 +281,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 					const preloadParams = new URLSearchParams({ q: '*', per_page: 250 });
 					if (filterValue) preloadParams.set("filter_by", filterValue);
 					const preloaded = await component.searchRequest(preloadParams);
-					if (component.isLanguageMode) {
-						preloaded.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
-					}
 					component._preloadedOptions = preloaded;
 					const commonSet = new Set((component._commonOptions || []).map(o => o.id));
 					preloaded.filter(r => !commonSet.has(r.id)).forEach(r => this.addOption(r));
@@ -490,6 +480,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 		const results = data.hits.map(result => {
 			return {...result, ...result.document}
 		});
+		if (this.isLanguageMode) {
+			results.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
+		}
 		return results;
 	}
 }
