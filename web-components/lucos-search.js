@@ -254,6 +254,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 					});
 					const commonResults = await component.searchRequest(commonParams);
 					component._commonOptions = commonResults.map(r => ({...r, lang_family: 'x-common'}));
+					// noLang (zxx) doesn't exist in Typesense, so add it synthetically if it's listed in data-common
+					if (noLang && component.commonIds.includes(noLang.id)) {
+						component._commonOptions.push({...noLang, lang_family: 'x-common'});
+					}
 					component._commonOptions.forEach(opt => this.addOption(opt));
 				}
 				// Add noLang option now (after common items) so we can check for overlap
@@ -476,6 +480,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 		const results = data.hits.map(result => {
 			return {...result, ...result.document}
 		});
+		if (this.isLanguageMode) {
+			results.forEach(r => { if (!r.lang_family) r.lang_family = 'qli'; });
+		}
 		return results;
 	}
 }
