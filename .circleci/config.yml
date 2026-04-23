@@ -6,4 +6,7 @@ workflows:
   version: 2
   release:
     jobs:
-      - lucos/release-npm
+      - lucos/release-npm:
+          filters:
+            branches:
+              only: main
