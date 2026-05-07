@@ -3,7 +3,7 @@ import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 
 class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key','data-types','data-exclude-types','data-no-lang','data-common','data-preload'];
+		return ['data-api-key','data-types','data-exclude-types','data-label-override-zxx','data-common','data-preload'];
 	}
 	constructor() {
 		super();
@@ -167,8 +167,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 
 				errorMessage.setAttribute('hidden', '');
 				const commonSet = new Set((component._commonOptions || []).map(o => o.id));
-				const noLang = component.noLangOption;
-				const noLangIsCommon = noLang && commonSet.has(noLang.id);
 				// When preloaded, filter locally instead of hitting Typesense
 				if (component._preloadedOptions) {
 					const q = query.toLowerCase();
@@ -189,7 +187,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 							: component._commonOptions;
 						filteredCommon.forEach(opt => this.addOption(opt));
 					}
-					if (noLang && !noLangIsCommon) results.unshift(noLang);
 					callback(results);
 					return;
 				}
@@ -217,8 +214,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 							: component._commonOptions;
 						filteredCommon.forEach(opt => this.addOption(opt));
 					}
-					// Don't add noLang as standalone if it's already covered by a common item
-					if (noLang && !noLangIsCommon) results.unshift(noLang);
 					callback(results);
 				} catch(err) {
 					if (err.name === 'AbortError') return;
@@ -240,13 +235,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 			onFocus: function() {
 				this.clearOptions();
 				const commonSet = new Set((component._commonOptions || []).map(o => o.id));
-				// Re-add common items first so they own any shared IDs (e.g. zxx in both data-no-lang and data-common)
 				if (component._commonOptions) {
 					component._commonOptions.forEach(opt => this.addOption(opt));
 				}
-				const noLang = component.noLangOption;
-				// Skip noLang if its ID is already a common item (would be silently discarded as a duplicate)
-				if (noLang && !commonSet.has(noLang.id)) this.addOption(noLang);
 				// Re-add preloaded options (excluding common items which are shown separately)
 				if (component._preloadedOptions) {
 					component._preloadedOptions
@@ -257,7 +248,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 			// On startup, update any existing options with latest data from search
 			onInitialize: async function() {
 				const ids = Object.keys(this.options);
-				const noLang = component.noLangOption;
 				// Fetch and register common items (x-common group goes first)
 				const commonIds = component.commonIds;
 				if (commonIds.length > 0) {
@@ -269,15 +259,8 @@ class LucosSearchComponent extends HTMLSpanElement {
 					});
 					const commonResults = await component.searchRequest(commonParams);
 					component._commonOptions = commonResults.map(r => ({...r, lang_family: 'x-common'}));
-					// noLang (zxx) doesn't exist in Typesense, so add it synthetically if it's listed in data-common
-					if (noLang && component.commonIds.includes(noLang.id)) {
-						component._commonOptions.push({...noLang, lang_family: 'x-common'});
-					}
 					component._commonOptions.forEach(opt => this.addOption(opt));
 				}
-				// Add noLang option now (after common items) so we can check for overlap
-				const noLangIsCommon = noLang && component._commonOptions && component._commonOptions.some(o => o.id === noLang.id);
-				if (noLang && !noLangIsCommon) this.addOption(noLang);
 				// In language mode, fetch families and register option groups
 				if (component.isLanguageMode) {
 					const families = await component.getLanguageFamilies();
@@ -301,9 +284,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 					preloaded.filter(r => !commonSet.has(r.id)).forEach(r => this.addOption(r));
 				}
 				if (ids.length < 1) return;
-				// Fetch real options from Typesense, excluding synthetic/preloaded items
+				// Fetch real options from Typesense, excluding common/preloaded items
 				const preloadedIds = component._preloadedOptions ? new Set(component._preloadedOptions.map(r => r.id)) : new Set();
-				const excludeIds = new Set([...(noLang ? [noLang.id] : []), ...commonIds, ...preloadedIds]);
+				const excludeIds = new Set([...commonIds, ...preloadedIds]);
 				const idsToFetch = ids.filter(id => !excludeIds.has(id));
 				if (idsToFetch.length > 0) {
 					const searchParams = new URLSearchParams({
@@ -315,10 +298,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 					results.forEach(result => {
 						this.updateOption(result.id, result);
 					});
-				}
-				// Update any pre-selected no-lang option with the synthetic data
-				if (noLang && ids.includes(noLang.id)) {
-					this.updateOption(noLang.id, noLang);
 				}
 				// Update any pre-selected common items with fresh data
 				if (component._commonOptions) {
@@ -339,14 +318,20 @@ class LucosSearchComponent extends HTMLSpanElement {
 			},
 			render:{
 				option: function(data, escape) {
-					let label = escape(data.pref_label);
+					const zxxOverride = component.getAttribute("data-label-override-zxx");
+					const displayLabel = (zxxOverride && data.id === 'https://eolas.l42.eu/metadata/language/zxx/')
+						? zxxOverride
+						: data.pref_label;
+					let label = escape(displayLabel);
 					let alt_label = "";
-					if (data.highlight.pref_label) {
-						label = data.highlight.pref_label.snippet;
-					} else if (data.highlight.labels) {
-						const matched_label = data.highlight.labels.find(l => l.matched_tokens.length > 0);
-						if (matched_label) {
-							alt_label = ` <span class="alt-label">(${matched_label.snippet})</span>`;
+					if (!zxxOverride || data.id !== 'https://eolas.l42.eu/metadata/language/zxx/') {
+						if (data.highlight.pref_label) {
+							label = data.highlight.pref_label.snippet;
+						} else if (data.highlight.labels) {
+							const matched_label = data.highlight.labels.find(l => l.matched_tokens.length > 0);
+							if (matched_label) {
+								alt_label = ` <span class="alt-label">(${matched_label.snippet})</span>`;
+							}
 						}
 					}
 					label = label.replace(` (${data.type})`,""); // No need to include any type disambiguation in label, as the type lozenge is shown when multiple types are configured
@@ -356,7 +341,11 @@ class LucosSearchComponent extends HTMLSpanElement {
 					return `<div>${label}${alt_label}${typeLozenge}</div>`;
 				},
 				item: function(data, escape) {
-					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data.id}" target="_blank">${escape(data.pref_label)}</a></div>`;
+					const zxxOverride = component.getAttribute("data-label-override-zxx");
+					const displayLabel = (zxxOverride && data.id === 'https://eolas.l42.eu/metadata/language/zxx/')
+						? zxxOverride
+						: data.pref_label;
+					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data.id}" target="_blank">${escape(displayLabel)}</a></div>`;
 				},
 			},
 		});
@@ -394,18 +383,6 @@ class LucosSearchComponent extends HTMLSpanElement {
 			this._form = null;
 			this._formdataHandler = null;
 		}
-	}
-	get noLangOption() {
-		const label = this.getAttribute("data-no-lang");
-		if (!label) return null;
-		return {
-			id: 'https://eolas.l42.eu/metadata/language/zxx/',
-			pref_label: label,
-			type: 'Language',
-			category: 'Anthropological',
-			labels: [],
-			highlight: {},
-		};
 	}
 	get isLanguageMode() {
 		const types = this.getAttribute("data-types");
