@@ -1,5 +1,6 @@
 import TomSelect from 'tom-select';
 import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
+import categoryColoursCSS from './generated/category-colours.css';
 
 class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
@@ -52,80 +53,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 				border-left-color: var(--lozenge-border) !important;
 			}
 
-			/* Default colour to greys, but override based on category */
+			/* Default colour to greys for unknown categories */
 			.lozenge {
 				--lozenge-background: #555;
 				--lozenge-border: #6d6d6d;
-				--lozenge-text: #fff;
-			}
-			.lozenge[data-category="Musical"] {
-				--lozenge-background: #000060;
-				--lozenge-border: #000020;
-			}
-			.lozenge[data-category="People"] {
-				--lozenge-background: #044E00;
-				--lozenge-border: #033100;
-			}
-			.lozenge[data-category="Aquatic"] {
-				--lozenge-background: #0085fe;
-				--lozenge-border: #0036b1;
-			}
-			.lozenge[data-category="Terrestrial"] {
-				--lozenge-background: #652c17;
-				--lozenge-border: #321200;
-			}
-			.lozenge[data-category="Cosmic"] {
-				--lozenge-background: #15163a;
-				--lozenge-border: #000000;
-				--lozenge-text: #feffe8;
-			}
-			.lozenge[data-category="Anthropogeographical"] {
-				--lozenge-background: #aed0db;
-				--lozenge-border: #3f6674;
-				--lozenge-text: #0c1a1b;
-			}
-			.lozenge[data-category="Supernatural"] {
-				--lozenge-background: #f1ff5f;
-				--lozenge-border: #674800;
-				--lozenge-text: #352005;
-			}
-			.lozenge[data-category="Historical"] {
-				--lozenge-background: #740909;
-				--lozenge-border: #470202;
-			}
-			.lozenge[data-category="Mathematical"] {
-				--lozenge-background: #f53b0e;
-				--lozenge-border: #7e3d2e;
-				--lozenge-text: #fff;
-			}
-			.lozenge[data-category="Temporal"] {
-				--lozenge-background: #fffc33;
-				--lozenge-border: #7f7e00;
-				--lozenge-text: #0f0f00;
-			}
-			.lozenge[data-category="Anthropological"] {
-				--lozenge-background: #8affe7;
-				--lozenge-border: #068900;
-				--lozenge-text: #000000;
-			}
-			.lozenge[data-category="Technological"] {
-				--lozenge-background: #c70f7a;
-				--lozenge-border: #8f125b;
-				--lozenge-text: #fff;
-			}
-			.lozenge[data-category="Meteorological"] {
-				--lozenge-background: #fff;
-				--lozenge-border: #333;
-				--lozenge-text: #000;
-			}
-			.lozenge[data-category="Literary"] {
-				--lozenge-background: #a22400;
-				--lozenge-border: #5e1500;
-				--lozenge-text: #fff;
-			}
-			.lozenge[data-category="Dramaturgical"] {
-				--lozenge-background: #5f0086;
-				--lozenge-border: #59007d;
 				--lozenge-text: #fff;
 			}
 
@@ -146,6 +77,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 		`;
 		shadow.appendChild(mainStyle);
 
+		const categoryColourStyle = document.createElement('style');
+		categoryColourStyle.textContent = categoryColoursCSS;
+		shadow.appendChild(categoryColourStyle);
 
 		const selector = component.querySelector("select");
 		if (!selector) throw new Error("Can't find select element in lucos-search");
