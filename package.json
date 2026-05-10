@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "example": "source .env && KEY_LUCOS_ARACHNE=$KEY_LUCOS_ARACHNE envsubst < example/index.html > example/built.html && npm run build && webpack -c example/webpack.config.js && open example/built.html",
-    "build": "rollup -c"
+    "build": "node scripts/generate-colours.js && rollup -c"
   },
   "repository": {
     "type": "git",
