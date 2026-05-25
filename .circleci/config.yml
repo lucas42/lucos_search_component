@@ -2,11 +2,27 @@ version: 2.1
 orbs:
   lucos: lucos/deploy@0
 
+jobs:
+  test:
+    docker:
+      - image: node:22-alpine
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - run:
+          name: Run Tests
+          command: npm test
+
 workflows:
   version: 2
   release:
     jobs:
+      - test
       - lucos/release-npm:
+          requires:
+            - test
           filters:
             branches:
               only: main
