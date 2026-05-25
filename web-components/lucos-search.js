@@ -1,10 +1,11 @@
 import TomSelect from 'tom-select';
 import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 import categoryColoursCSS from './generated/category-colours.css';
+import { buildFilterBy } from './filter.js';
 
 class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key','data-types','data-exclude-types','data-label-override-zxx','data-common','data-preload'];
+		return ['data-api-key','data-types','data-exclude-types','data-is-contact','data-label-override-zxx','data-common','data-preload'];
 	}
 	constructor() {
 		super();
@@ -127,11 +128,12 @@ class LucosSearchComponent extends HTMLSpanElement {
 				const queryParams = new URLSearchParams({
 					q: query,
 				});
-				if (component.getAttribute("data-types")) {
-					queryParams.set("filter_by",`type:=[${component.getAttribute("data-types")}]`);
-				} else if (component.getAttribute("data-exclude_types")) {
-					queryParams.set("filter_by",`type:!=[${component.getAttribute("data-exclude_types")}]`);
-				}
+				const filterBy = buildFilterBy(
+					component.getAttribute("data-types"),
+					component.getAttribute("data-exclude_types"),
+					component.getAttribute("data-is-contact"),
+				);
+				if (filterBy) queryParams.set("filter_by", filterBy);
 				try {
 					let results = await component.searchRequest(queryParams, abortController.signal);
 					if (abortController.signal.aborted) return;
@@ -204,11 +206,11 @@ class LucosSearchComponent extends HTMLSpanElement {
 				}
 				// Preload all matching options (after groups are registered so options slot correctly)
 				if (component.hasAttribute("data-preload")) {
-					const filterValue = component.getAttribute("data-types")
-						? `type:=[${component.getAttribute("data-types")}]`
-						: component.getAttribute("data-exclude_types")
-							? `type:!=[${component.getAttribute("data-exclude_types")}]`
-							: null;
+					const filterValue = buildFilterBy(
+						component.getAttribute("data-types"),
+						component.getAttribute("data-exclude_types"),
+						component.getAttribute("data-is-contact"),
+					);
 					// per_page: 250 acts as an upper bound — data-preload is intended for finite datasets
 					const preloadParams = new URLSearchParams({ q: '*', per_page: 250 });
 					if (filterValue) preloadParams.set("filter_by", filterValue);

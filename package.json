@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test test/*.test.mjs",
     "example": "source .env && KEY_LUCOS_ARACHNE=$KEY_LUCOS_ARACHNE envsubst < example/index.html > example/built.html && npm run build && webpack -c example/webpack.config.js && open example/built.html",
     "build": "node scripts/generate-colours.js && rollup -c"
   },
