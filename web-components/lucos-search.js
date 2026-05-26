@@ -5,7 +5,7 @@ import { buildFilterBy } from './filter.js';
 
 class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key','data-types','data-exclude-types','data-is-contact','data-label-override-zxx','data-common','data-preload'];
+		return ['data-api-key','data-types','data-exclude_types','data-is-contact','data-label-override-zxx','data-common','data-preload'];
 	}
 	constructor() {
 		super();
