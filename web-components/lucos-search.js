@@ -347,6 +347,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				const r = dropdown.getBoundingClientRect();
 				content.style.top = r.top + 'px';
 				content.style.left = r.left + 'px';
+				content.style.width = r.width + 'px';
 			};
 			window.addEventListener('scroll', dropdownScrollHandler, { passive: true, capture: true });
 			window.addEventListener('resize', dropdownScrollHandler, { passive: true });
