@@ -9,9 +9,9 @@
 export function buildFilterBy(types, excludeTypes, isContact) {
 	const parts = [];
 	if (types) {
-		parts.push(`type:=[${types}]`);
+		parts.push(`types:=[${types}]`);
 	} else if (excludeTypes) {
-		parts.push(`type:!=[${excludeTypes}]`);
+		parts.push(`types:!=[${excludeTypes}]`);
 	}
 	if (isContact === 'true') {
 		parts.push('is_contact:=true');

@@ -416,7 +416,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		if (!key) { this._langFamilies = []; return []; }
 		const searchParams = new URLSearchParams({
 			q: '*',
-			filter_by: 'type:=Language Family',
+			filter_by: 'types:=Language Family',
 			query_by: 'pref_label',
 			include_fields: 'id,pref_label',
 			sort_by: 'pref_label:asc',
