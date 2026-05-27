@@ -35,6 +35,26 @@
 			<option selected>https://eolas.l42.eu/metadata/place/316/</option>
 			<option selected>https://eolas.l42.eu/metadata/place/317/</option>
 		</select></span>
+		<h1>Multi-column layout</h1>
+		<p>Dropdowns should open within the same column as their field, not overflow into the adjacent column.</p>
+		<div style="column-count: 2; column-gap: 2em; border: 1px solid #ccc; padding: 1em;">
+			<div style="break-inside: avoid;">
+				<label for="col-search1">Theme tune:</label>
+				<span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="CreativeWork"><select id="col-search1"></select></span>
+			</div>
+			<div style="break-inside: avoid;">
+				<label for="col-search2">Soundtrack:</label>
+				<span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="CreativeWork"><select id="col-search2"></select></span>
+			</div>
+			<div style="break-inside: avoid;">
+				<label for="col-search3">Language:</label>
+				<span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language"><select id="col-search3"></select></span>
+			</div>
+			<div style="break-inside: avoid;">
+				<label for="col-search4">About:</label>
+				<span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}"><select id="col-search4"></select></span>
+			</div>
+		</div>
 		<h1>Form submission</h1>
 		<form id="test-form" onsubmit="handleSubmit(event)">
 			<label for="tags">Tags:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}"><select id="tags" name="tags" multiple></select></span>
