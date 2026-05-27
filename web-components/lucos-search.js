@@ -71,15 +71,20 @@ class LucosSearchComponent extends HTMLSpanElement {
 			/* Prevent dropdown overflowing into an adjacent column in multi-column layouts.
 			 * Consumers may embed lucos-search in a CSS column-count context (e.g. a 2-column
 			 * form). Because TomSelect's DOM lives inside this shadow root, page-level CSS
-			 * cannot fix column overflow from outside. This replicates the same fix used by
-			 * lucos_media_metadata_manager for its light-DOM TomSelect instances. */
+			 * cannot fix column overflow from outside.
+			 *
+			 * The actual fix is applied in JavaScript (see fixDropdownContentPosition below):
+			 * Chromium has a bug where position:absolute on a shadow-DOM descendant inside a
+			 * multi-column container resolves the containing block to the column-box boundary
+			 * rather than the nearest positioned ancestor (.ts-dropdown). CSS-only approaches
+			 * (position:absolute with explicit top/left, contain:layout) do not override this.
+			 * The JS fix switches .ts-dropdown-content to position:fixed when the dropdown opens
+			 * inside a multi-column layout, bypassing the containing-block resolution entirely. */
 			.ts-dropdown {
 				border: none;
 				margin: -3px 0 0 0;
 			}
 			.ts-dropdown-content {
-				position: absolute;
-				width: 100%;
 				background: #fff;
 				border: 1px solid #d0d0d0;
 				margin: 0.25rem 0 0;
@@ -302,6 +307,63 @@ class LucosSearchComponent extends HTMLSpanElement {
 				},
 			},
 		});
+
+		// fixDropdownContentPosition: work around a Chromium bug where, inside a shadow
+		// DOM + CSS multi-column context, Chromium resolves position:absolute on
+		// .ts-dropdown-content to the column-box boundary rather than the .ts-dropdown
+		// containing block. We detect the multi-column context and switch to position:fixed
+		// with explicit viewport coordinates, bypassing containing-block resolution entirely.
+		const ts = selector.tomselect;
+		let dropdownScrollHandler = null;
+
+		function isInMultiColumnLayout() {
+			let el = component.parentElement;
+			while (el && el !== document.body) {
+				if (parseInt(window.getComputedStyle(el).columnCount) > 1) return true;
+				el = el.parentElement;
+			}
+			return false;
+		}
+
+		ts.on('dropdown_open', function (dropdown) {
+			if (!isInMultiColumnLayout()) return;
+			const content = ts.dropdown_content;
+			// Set position:fixed BEFORE reading the bounding rect. Chromium has a bug
+			// where, in shadow DOM + multi-column layouts, getBoundingClientRect() on
+			// .ts-dropdown returns the column-box dimensions rather than the true visual
+			// position while the content is in normal flow. Applying position:fixed first
+			// takes the content out of flow, which forces Chromium to recompute .ts-dropdown's
+			// layout correctly. Subsequent getBoundingClientRect() then returns accurate values.
+			content.style.position = 'fixed';
+			const rect = dropdown.getBoundingClientRect();
+			if (!rect.width) {
+				content.style.position = '';
+				return;
+			}
+			content.style.top = rect.top + 'px';
+			content.style.left = rect.left + 'px';
+			content.style.width = rect.width + 'px';
+			dropdownScrollHandler = function () {
+				const r = dropdown.getBoundingClientRect();
+				content.style.top = r.top + 'px';
+				content.style.left = r.left + 'px';
+			};
+			window.addEventListener('scroll', dropdownScrollHandler, { passive: true, capture: true });
+			window.addEventListener('resize', dropdownScrollHandler, { passive: true });
+		});
+
+		ts.on('dropdown_close', function () {
+			if (!dropdownScrollHandler) return;
+			const content = ts.dropdown_content;
+			content.style.position = '';
+			content.style.top = '';
+			content.style.left = '';
+			content.style.width = '';
+			window.removeEventListener('scroll', dropdownScrollHandler, { capture: true });
+			window.removeEventListener('resize', dropdownScrollHandler);
+			dropdownScrollHandler = null;
+		});
+
 		if (selector.nextElementSibling) {
 			shadow.append(selector.nextElementSibling);
 		}
