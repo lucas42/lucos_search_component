@@ -68,8 +68,25 @@ class LucosSearchComponent extends HTMLSpanElement {
 				margin: 0 3px;
 				padding: 2px 6px;
 			}
+			/* Prevent dropdown overflowing into an adjacent column in multi-column layouts.
+			 * Consumers may embed lucos-search in a CSS column-count context (e.g. a 2-column
+			 * form). Because TomSelect's DOM lives inside this shadow root, page-level CSS
+			 * cannot fix column overflow from outside. This replicates the same fix used by
+			 * lucos_media_metadata_manager for its light-DOM TomSelect instances. */
 			.ts-dropdown {
-				margin: 0;
+				border: none;
+				margin: -3px 0 0 0;
+			}
+			.ts-dropdown-content {
+				position: absolute;
+				width: 100%;
+				background: #fff;
+				border: 1px solid #d0d0d0;
+				margin: 0.25rem 0 0;
+				border-top: 0 none;
+				box-sizing: border-box;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+				border-radius: 0 0 3px 3px;
 			}
 			.lozenge a {
 				color: inherit;
