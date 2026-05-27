@@ -19,5 +19,15 @@ test('omitting data-is-contact produces no is_contact filter', () => {
 
 test('data-is-contact combines correctly with data-types', () => {
 	const result = buildFilterBy('Person', null, 'true');
-	assert.equal(result, 'type:=[Person] && is_contact:=true');
+	assert.equal(result, 'types:=[Person] && is_contact:=true');
+});
+
+test('data-types produces types:= filter', () => {
+	const result = buildFilterBy('City,River', null, null);
+	assert.equal(result, 'types:=[City,River]');
+});
+
+test('data-exclude-types produces types:!= filter', () => {
+	const result = buildFilterBy(null, 'Track', null);
+	assert.equal(result, 'types:!=[Track]');
 });
