@@ -99,9 +99,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 				text-decoration: none;
 			}
 
-			/* Pre-save visual indicator for unsaved created entries */
+			/* Pre-save visual indicator for unsaved created entries.
+			 * !important needed to override TomSelect's base border shorthand. */
 			.lozenge.lozenge-pending {
-				border-style: dashed;
+				border-style: dashed !important;
 				font-style: italic;
 			}
 		`;
