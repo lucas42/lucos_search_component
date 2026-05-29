@@ -2,10 +2,11 @@ import TomSelect from 'tom-select';
 import tomSelectStylesheet from 'tom-select/dist/css/tom-select.default.css';
 import categoryColoursCSS from './generated/category-colours.css';
 import { buildFilterBy } from './filter.js';
+import { buildFormDataEntries } from './form-serialise.js';
 
 class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key','data-types','data-exclude_types','data-is-contact','data-label-override-zxx','data-common','data-preload'];
+		return ['data-api-key','data-types','data-exclude_types','data-is-contact','data-label-override-zxx','data-common','data-preload','data-create'];
 	}
 	constructor() {
 		super();
@@ -97,6 +98,12 @@ class LucosSearchComponent extends HTMLSpanElement {
 				color: inherit;
 				text-decoration: none;
 			}
+
+			/* Pre-save visual indicator for unsaved created entries */
+			.lozenge.lozenge-pending {
+				border-style: dashed;
+				font-style: italic;
+			}
 		`;
 		shadow.appendChild(mainStyle);
 
@@ -107,8 +114,22 @@ class LucosSearchComponent extends HTMLSpanElement {
 		const selector = component.querySelector("select");
 		if (!selector) throw new Error("Can't find select element in lucos-search");
 		selector.setAttribute("multiple", "multiple");
+
+		// Derive a noun for the "Add new <type>: <name>" create prompt when data-types is a single type
+		function getCreateNoun() {
+			const dataTypes = component.getAttribute("data-types");
+			if (!dataTypes) return null;
+			const types = dataTypes.split(",").map(t => t.trim()).filter(Boolean);
+			return types.length === 1 ? types[0] : null;
+		}
+
 		new TomSelect(selector, {
 			...(component.isLanguageMode || component.getAttribute("data-common") ? { optgroupField: 'lang_family', lockOptgroupOrder: true } : {}),
+			...(component.hasAttribute("data-create") ? {
+				create: function(input) {
+					return { id: input, pref_label: input, created: true };
+				},
+			} : {}),
 			valueField: 'id',
 			labelField: 'pref_label',
 			searchField: [],
@@ -271,8 +292,12 @@ class LucosSearchComponent extends HTMLSpanElement {
 				}
 			},
 			onItemSelect: function (item) {
-				// Tom-select prevents clicking on link in an item to work as normal, so force it here
-				window.open(item.dataset.value, '_blank').focus();
+				// Tom-select prevents clicking on link in an item to work as normal, so force it here.
+				// Skip navigation for created (unsaved) entries — they have no arachne URI.
+				const value = item.dataset.value;
+				const option = this.options[value];
+				if (option && option.created) return;
+				window.open(value, '_blank').focus();
 			},
 			render:{
 				option: function(data, escape) {
@@ -303,7 +328,18 @@ class LucosSearchComponent extends HTMLSpanElement {
 					const displayLabel = (zxxOverride && data.id === 'https://eolas.l42.eu/metadata/language/zxx/')
 						? zxxOverride
 						: data.pref_label;
+					// Created (unsaved) entries: no URI to link to, render with pending indicator
+					if (data.created) {
+						return `<div class="lozenge lozenge-pending" data-type="" data-category="">${escape(displayLabel)}</div>`;
+					}
 					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data.id}" target="_blank">${escape(displayLabel)}</a></div>`;
+				},
+				option_create: function(data, escape) {
+					const noun = getCreateNoun();
+					if (noun) {
+						return `<div class="create">Add new ${escape(noun)}: <strong>${escape(data.input)}</strong>&hellip;</div>`;
+					}
+					return `<div class="create">Add <strong>${escape(data.input)}</strong>&hellip;</div>`;
 				},
 			},
 		});
@@ -379,16 +415,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 			const ts = selector.tomselect;
 			if (!ts) return;
 			const name = selector.name;
-			const values = ts.getValue();
-			const valueArray = Array.isArray(values) ? values : (values ? [values] : []);
 			// Remove the native select values so consumers only receive the structured pairs
 			event.formData.delete(name);
-			valueArray.forEach((id, idx) => {
-				const option = ts.options[id];
-				if (option) {
-					event.formData.append(`${name}[${idx}][uri]`, id);
-					event.formData.append(`${name}[${idx}][name]`, option.pref_label);
-				}
+			buildFormDataEntries(name, ts.getValue(), ts.options).forEach(([key, value]) => {
+				event.formData.append(key, value);
 			});
 		};
 		form.addEventListener('formdata', this._formdataHandler);
