@@ -36,6 +36,7 @@ The following attributes can be added to the lucos-search span:
 * **data-label-override-zxx** — Override the displayed label for the `https://eolas.l42.eu/metadata/language/zxx/` entry in both the dropdown and selected lozenge. Has no effect on whether `zxx` appears in the list — that depends on whether `zxx` is present in the search index. Only meaningful when `data-types="Language"`.
 * **data-common** — A comma separated list of item URIs to pin in a "Common" group at the top of the list, above the normal results. Only meaningful when `data-types="Language"`.
 * **data-preload** — If present, all options are loaded upfront rather than fetched on search. Suitable for small, finite datasets such as languages.
+* **data-create** — Boolean presence attribute. When present, enables inline creation of new entities: if the user types a name with no matching arachne result, they can pick "Add new `<type>`: `<name>`…" from the dropdown. On form submit, the created entry is serialised as a name-only value (`[name]` set, `[uri]` omitted) so the consumer can route it to a create-on-write path. **Opt-in per instance** — controlled-vocabulary fields (e.g. language, offence) must not set this; only open entity types (e.g. Person) should allow inline creation. The `[uri]` + `[name]` serialisation for existing arachne-selected entries is unaffected.
 
 #### Language selector
 
