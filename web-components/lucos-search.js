@@ -100,8 +100,13 @@ class LucosSearchComponent extends HTMLSpanElement {
 			}
 
 			/* Pre-save visual indicator for unsaved created entries.
-			 * !important needed to override TomSelect's base border shorthand. */
+			 * Cream background distinguishes from both the default unknown-category grey (#555)
+			 * and the white used by the Meteorological category.
+			 * border-style !important needed to override TomSelect's base border shorthand. */
 			.lozenge.lozenge-pending {
+				--lozenge-background: #fffbea;
+				--lozenge-border: #999999;
+				--lozenge-text: #333333;
 				border-style: dashed !important;
 				font-style: italic;
 			}
@@ -122,6 +127,17 @@ class LucosSearchComponent extends HTMLSpanElement {
 			if (!dataTypes) return null;
 			const types = dataTypes.split(",").map(t => t.trim()).filter(Boolean);
 			return types.length === 1 ? types[0] : null;
+		}
+
+		if (component.hasAttribute("data-create")) {
+			const createTypes = component.getAttribute("data-types");
+			const createTypeList = createTypes ? createTypes.split(",").map(t => t.trim()).filter(Boolean) : [];
+			if (createTypeList.length > 1) {
+				console.warn(
+					`lucos-search: data-create is set alongside data-types="${createTypes}" which specifies ${createTypeList.length} types. ` +
+					`Server-side there will be no way to determine which type to create — data-create should only be used with a single data-types value.`
+				);
+			}
 		}
 
 		new TomSelect(selector, {

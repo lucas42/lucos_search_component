@@ -61,6 +61,13 @@
 			<button type="submit">Submit</button>
 		</form>
 		<pre id="form-output"></pre>
+		<h1>Inline create (data-create)</h1>
+		<p>Person field with <code>data-create</code>: type a name with no match and pick "Add new Person: …" to create a new entry. Created entries render with a cream dashed lozenge and serialise as <code>[name]</code>-only (no <code>[uri]</code>) on submit.</p>
+		<form id="create-form" onsubmit="handleCreateSubmit(event)">
+			<label for="composer">Composer:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Person" data-create><select id="composer" name="composer" multiple></select></span>
+			<button type="submit">Submit</button>
+		</form>
+		<pre id="create-output"></pre>
 		<script>
 			function handleSubmit(event) {
 				event.preventDefault();
@@ -71,6 +78,16 @@
 					output[key].push(value);
 				}
 				document.getElementById('form-output').textContent = JSON.stringify(output, null, 2);
+			}
+			function handleCreateSubmit(event) {
+				event.preventDefault();
+				const data = new FormData(event.target);
+				const output = {};
+				for (const [key, value] of data.entries()) {
+					if (!output[key]) output[key] = [];
+					output[key].push(value);
+				}
+				document.getElementById('create-output').textContent = JSON.stringify(output, null, 2);
 			}
 		</script>
 		<script src="./built.js"></script>
