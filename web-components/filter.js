@@ -1,12 +1,13 @@
 /**
  * Builds a Typesense filter_by expression from the search component's filter attributes.
  *
- * @param {string|null} types       - Value of data-types attribute (e.g. "Person,Place")
- * @param {string|null} excludeTypes - Value of data-exclude-types attribute (e.g. "Language")
- * @param {string|null} isContact   - Value of data-is-contact attribute ("true" or "false")
+ * @param {string|null} types          - Value of data-types attribute (e.g. "Person,Place")
+ * @param {string|null} excludeTypes   - Value of data-exclude-types attribute (e.g. "Language")
+ * @param {string|null} isContact      - Value of data-is-contact attribute ("true" or "false")
+ * @param {string|null} allowedOrigins - Value of data-allowed-origins attribute (e.g. "https://eolas.l42.eu")
  * @returns {string|null} filter expression, or null if no filters apply
  */
-export function buildFilterBy(types, excludeTypes, isContact) {
+export function buildFilterBy(types, excludeTypes, isContact, allowedOrigins) {
 	const parts = [];
 	if (types) {
 		parts.push(`types:=[${types}]`);
@@ -17,6 +18,9 @@ export function buildFilterBy(types, excludeTypes, isContact) {
 		parts.push('is_contact:=true');
 	} else if (isContact === 'false') {
 		parts.push('is_contact:=false');
+	}
+	if (allowedOrigins) {
+		parts.push(`origin:=[${allowedOrigins}]`);
 	}
 	return parts.length > 0 ? parts.join(' && ') : null;
 }

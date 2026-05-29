@@ -6,7 +6,7 @@ import { buildFormDataEntries } from './form-serialise.js';
 
 class LucosSearchComponent extends HTMLSpanElement {
 	static get observedAttributes() {
-		return ['data-api-key','data-types','data-exclude_types','data-is-contact','data-label-override-zxx','data-common','data-preload','data-create'];
+		return ['data-api-key','data-types','data-exclude_types','data-is-contact','data-label-override-zxx','data-common','data-preload','data-create','data-allowed-origins'];
 	}
 	constructor() {
 		super();
@@ -192,6 +192,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 					component.getAttribute("data-types"),
 					component.getAttribute("data-exclude_types"),
 					component.getAttribute("data-is-contact"),
+					component.getAttribute("data-allowed-origins"),
 				);
 				if (filterBy) queryParams.set("filter_by", filterBy);
 				try {
@@ -270,6 +271,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 						component.getAttribute("data-types"),
 						component.getAttribute("data-exclude_types"),
 						component.getAttribute("data-is-contact"),
+						component.getAttribute("data-allowed-origins"),
 					);
 					// per_page: 250 acts as an upper bound — data-preload is intended for finite datasets
 					const preloadParams = new URLSearchParams({ q: '*', per_page: 250 });
