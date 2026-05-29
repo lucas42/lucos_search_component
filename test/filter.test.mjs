@@ -31,3 +31,23 @@ test('data-exclude-types produces types:!= filter', () => {
 	const result = buildFilterBy(null, 'Track', null);
 	assert.equal(result, 'types:!=[Track]');
 });
+
+test('data-allowed-origins produces origin:= filter', () => {
+	const result = buildFilterBy(null, null, null, 'https://eolas.l42.eu');
+	assert.equal(result, 'origin:=[https://eolas.l42.eu]');
+});
+
+test('data-allowed-origins with multiple comma-separated origins', () => {
+	const result = buildFilterBy(null, null, null, 'https://eolas.l42.eu,https://contacts.l42.eu');
+	assert.equal(result, 'origin:=[https://eolas.l42.eu,https://contacts.l42.eu]');
+});
+
+test('data-allowed-origins combines with data-types', () => {
+	const result = buildFilterBy('Person', null, null, 'https://eolas.l42.eu');
+	assert.equal(result, 'types:=[Person] && origin:=[https://eolas.l42.eu]');
+});
+
+test('absent data-allowed-origins produces no origin filter', () => {
+	const result = buildFilterBy('Person', null, null, null);
+	assert.equal(result, 'types:=[Person]');
+});
