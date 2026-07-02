@@ -76,6 +76,9 @@
 			<button type="submit">Submit</button>
 		</form>
 		<pre id="contact-output"></pre>
+		<label for="linked-contact-preselected">Linked contact (pre-selected on page load):</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-is-contact="true"><select id="linked-contact-preselected" multiple>
+			<option selected>https://contacts.l42.eu/people/2</option>
+		</select></span>
 		<script>
 			function handleSubmit(event) {
 				event.preventDefault();
