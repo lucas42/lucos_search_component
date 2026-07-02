@@ -144,10 +144,19 @@ class LucosSearchComponent extends HTMLSpanElement {
 			...(component.isLanguageMode || component.getAttribute("data-common") ? { optgroupField: 'lang_family', lockOptgroupOrder: true } : {}),
 			...(component.hasAttribute("data-create") ? {
 				create: function(input) {
-					return { id: input, pref_label: input, created: true };
+					// Key must match valueField below (contact_uri in contact mode) — a
+					// hardcoded `id` key here would leave the created option unaddressable
+					// by TomSelect when data-is-contact="true".
+					const created = { pref_label: input, created: true };
+					created[component.valueFieldName] = input;
+					return created;
 				},
 			} : {}),
-			valueField: 'id',
+			// In contact mode, the form value, TomSelect's option key, and the lozenge
+			// click-through/link target (render.item below, onItemSelect further down) all
+			// use the lucos_contacts URI instead of the eolas knowledge URI — see
+			// lucos_arachne#712 and the #190 review discussion.
+			valueField: component.valueFieldName,
 			labelField: 'pref_label',
 			searchField: [],
 			closeAfterSelect: true,
@@ -161,7 +170,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				component._searchAbortController = abortController;
 
 				errorMessage.setAttribute('hidden', '');
-				const commonSet = new Set((component._commonOptions || []).map(o => o.id));
+				const commonSet = new Set((component._commonOptions || []).map(o => o[component.valueFieldName]));
 				// When preloaded, filter locally instead of hitting Typesense
 				if (component._preloadedOptions) {
 					const q = query.toLowerCase();
@@ -171,7 +180,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 							(r.labels && r.labels.some(l => l.toLowerCase().includes(q)))
 						  )
 						: [...component._preloadedOptions];
-					results = results.filter(r => !commonSet.has(r.id));
+					results = results.filter(r => !commonSet.has(r[component.valueFieldName]));
 					this.clearOptions();
 					if (component._commonOptions) {
 						const filteredCommon = q
@@ -201,7 +210,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 					this.clearOptions();
 					// Remove common items from results to avoid duplication; filter by query when non-empty
 					if (component._commonOptions) {
-						results = results.filter(r => !commonSet.has(r.id));
+						results = results.filter(r => !commonSet.has(r[component.valueFieldName]));
 						const q = query.toLowerCase();
 						const filteredCommon = q
 							? component._commonOptions.filter(o =>
@@ -231,14 +240,14 @@ class LucosSearchComponent extends HTMLSpanElement {
 			},
 			onFocus: function() {
 				this.clearOptions();
-				const commonSet = new Set((component._commonOptions || []).map(o => o.id));
+				const commonSet = new Set((component._commonOptions || []).map(o => o[component.valueFieldName]));
 				if (component._commonOptions) {
 					component._commonOptions.forEach(opt => this.addOption(opt));
 				}
 				// Re-add preloaded options (excluding common items which are shown separately)
 				if (component._preloadedOptions) {
 					component._preloadedOptions
-						.filter(opt => !commonSet.has(opt.id))
+						.filter(opt => !commonSet.has(opt[component.valueFieldName]))
 						.forEach(opt => this.addOption(opt));
 				}
 			},
@@ -251,7 +260,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 					this.addOptionGroup('x-common', { label: 'Common' });
 					const commonParams = new URLSearchParams({
 						q: '*',
-						filter_by: `id:[${commonIds.join(",")}]`,
+						filter_by: `${component.valueFieldName}:[${commonIds.join(",")}]`,
 						per_page: commonIds.length,
 					});
 					const commonResults = await component.searchRequest(commonParams);
@@ -278,35 +287,42 @@ class LucosSearchComponent extends HTMLSpanElement {
 					if (filterValue) preloadParams.set("filter_by", filterValue);
 					const preloaded = await component.searchRequest(preloadParams);
 					component._preloadedOptions = preloaded;
-					const commonSet = new Set((component._commonOptions || []).map(o => o.id));
-					preloaded.filter(r => !commonSet.has(r.id)).forEach(r => this.addOption(r));
+					const commonSet = new Set((component._commonOptions || []).map(o => o[component.valueFieldName]));
+					preloaded.filter(r => !commonSet.has(r[component.valueFieldName])).forEach(r => this.addOption(r));
 				}
 				if (ids.length < 1) return;
-				// Fetch real options from Typesense, excluding common/preloaded items
-				const preloadedIds = component._preloadedOptions ? new Set(component._preloadedOptions.map(r => r.id)) : new Set();
+				// Fetch real options from Typesense, excluding common/preloaded items.
+				// `ids` are keyed by whatever valueField is configured (contact_uri in
+				// contact mode, id otherwise), so every set/filter/updateOption below must
+				// use the same key — a stray `.id` here is a silent no-op, not an error
+				// (see lucos_search_component#190 review: updateOption(result.id, ...)
+				// looks up tom-select's options map by valueField, not literally `id`).
+				const preloadedIds = component._preloadedOptions ? new Set(component._preloadedOptions.map(r => r[component.valueFieldName])) : new Set();
 				const excludeIds = new Set([...commonIds, ...preloadedIds]);
 				const idsToFetch = ids.filter(id => !excludeIds.has(id));
 				if (idsToFetch.length > 0) {
 					const searchParams = new URLSearchParams({
 						q: '*',
-						filter_by: `id:[${idsToFetch.join(",")}]`,
+						filter_by: `${component.valueFieldName}:[${idsToFetch.join(",")}]`,
 						per_page: idsToFetch.length,
 					});
 					const results = await component.searchRequest(searchParams);
 					results.forEach(result => {
-						this.updateOption(result.id, result);
+						this.updateOption(result[component.valueFieldName], result);
 					});
 				}
 				// Update any pre-selected common items with fresh data
 				if (component._commonOptions) {
 					component._commonOptions.forEach(opt => {
-						if (ids.includes(opt.id)) this.updateOption(opt.id, opt);
+						const key = opt[component.valueFieldName];
+						if (ids.includes(key)) this.updateOption(key, opt);
 					});
 				}
 				// Update any pre-selected preloaded items with fresh data
 				if (component._preloadedOptions) {
 					component._preloadedOptions.forEach(opt => {
-						if (ids.includes(opt.id)) this.updateOption(opt.id, opt);
+						const key = opt[component.valueFieldName];
+						if (ids.includes(key)) this.updateOption(key, opt);
 					});
 				}
 			},
@@ -351,7 +367,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 					if (data.created) {
 						return `<div class="lozenge lozenge-pending" data-type="" data-category="">${escape(displayLabel)}</div>`;
 					}
-					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data.id}" target="_blank">${escape(displayLabel)}</a></div>`;
+					// Link target matches the form value (valueFieldName) — in contact mode
+					// that's contact_uri, not the eolas id, per lucas42's review on #190:
+					// everything should link to the same URI for consistency.
+					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data[component.valueFieldName]}" target="_blank">${escape(displayLabel)}</a></div>`;
 				},
 				option_create: function(data, escape) {
 					const noun = getCreateNoun();
@@ -454,6 +473,17 @@ class LucosSearchComponent extends HTMLSpanElement {
 		if (!types) return false;
 		return types.split(",").map(t => t.trim()).includes("Language");
 	}
+	// The document field TomSelect uses as its option key/form value: contact_uri when
+	// data-is-contact="true", id otherwise. Every place that reads/writes TomSelect's
+	// internal options map (keyed by valueField) or filters Typesense by that key must
+	// go through this — hardcoding `.id` breaks in contact mode (lucos_search_component#190
+	// review: `updateOption(result.id, ...)` silently no-op'd because tom-select hashes
+	// on valueField, not literally `id`). Checks the attribute directly rather than via a
+	// separate isContactMode getter — data-is-contact is also read directly elsewhere
+	// (e.g. buildFilterBy's callers), so a getter here would look more reusable than it is.
+	get valueFieldName() {
+		return this.getAttribute("data-is-contact") === "true" ? 'contact_uri' : 'id';
+	}
 	get commonIds() {
 		const common = this.getAttribute("data-common");
 		if (!common) return [];
@@ -499,7 +529,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		searchParams.set('query_by_weights', "10,8,3,1");
 		searchParams.set('sort_by', "_text_match:desc,pref_label:asc");
 		searchParams.set('prioritize_num_matching_fields', false);
-		searchParams.set('include_fields', "id,pref_label,type,category,labels,lang_family");
+		searchParams.set('include_fields', "id,pref_label,type,category,labels,lang_family,contact_uri");
 		searchParams.set('enable_highlight_v1', false);
 		searchParams.set('highlight_start_tag', '<span class="highlight">')
 		searchParams.set('highlight_end_tag', '</span>');
