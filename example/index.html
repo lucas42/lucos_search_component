@@ -70,7 +70,7 @@
 		</form>
 		<pre id="create-output"></pre>
 		<h1>Contact mode (data-is-contact)</h1>
-		<p>Person field restricted to <code>lucos_contacts</code> records (<code>data-is-contact="true"</code>). The selected-item lozenge still links through to the eolas knowledge page, but the value serialised on submit is the <code>lucos_contacts</code> URI (<code>contact_uri</code>), not the eolas URI — see lucos_search_component#189.</p>
+		<p>Person field restricted to <code>lucos_contacts</code> records (<code>data-is-contact="true"</code>). The selected-item lozenge links through to the <code>lucos_contacts</code> URI (<code>contact_uri</code>), and the value serialised on submit is that same URI — not the eolas URI — see lucos_search_component#189.</p>
 		<form id="contact-form" onsubmit="handleContactSubmit(event)">
 			<label for="linked-contact">Linked contact:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-is-contact="true"><select id="linked-contact" name="linked_contact" multiple></select></span>
 			<button type="submit">Submit</button>

@@ -152,10 +152,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 					return created;
 				},
 			} : {}),
-			// In contact mode, the form value (and TomSelect's option key) must be the
-			// lucos_contacts URI, not the eolas knowledge URI — see lucos_arachne#712.
-			// The lozenge click-through target stays data.id regardless (render.item below,
-			// and onItemSelect further down).
+			// In contact mode, the form value, TomSelect's option key, and the lozenge
+			// click-through/link target (render.item below, onItemSelect further down) all
+			// use the lucos_contacts URI instead of the eolas knowledge URI — see
+			// lucos_arachne#712 and the #190 review discussion.
 			valueField: component.valueFieldName,
 			labelField: 'pref_label',
 			searchField: [],
@@ -332,10 +332,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 				const value = item.dataset.value;
 				const option = this.options[value];
 				if (option && option.created) return;
-				// Navigate via option.id, not the raw form value — in contact mode the form
-				// value is contact_uri, a different resource from the eolas knowledge-graph
-				// entity the lozenge is meant to link to (lucos_search_component#189).
-				window.open((option && option.id) || value, '_blank').focus();
+				window.open(value, '_blank').focus();
 			},
 			render:{
 				option: function(data, escape) {
@@ -370,7 +367,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 					if (data.created) {
 						return `<div class="lozenge lozenge-pending" data-type="" data-category="">${escape(displayLabel)}</div>`;
 					}
-					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data.id}" target="_blank">${escape(displayLabel)}</a></div>`;
+					// Link target matches the form value (valueFieldName) — in contact mode
+					// that's contact_uri, not the eolas id, per lucas42's review on #190:
+					// everything should link to the same URI for consistency.
+					return `<div class="lozenge" data-type="${escape(data.type)}" data-category="${escape(data.category)}"><a href="${data[component.valueFieldName]}" target="_blank">${escape(displayLabel)}</a></div>`;
 				},
 				option_create: function(data, escape) {
 					const noun = getCreateNoun();
@@ -473,17 +473,16 @@ class LucosSearchComponent extends HTMLSpanElement {
 		if (!types) return false;
 		return types.split(",").map(t => t.trim()).includes("Language");
 	}
-	get isContactMode() {
-		return this.getAttribute("data-is-contact") === "true";
-	}
-	// The document field TomSelect uses as its option key/form value: contact_uri in
-	// contact mode, id otherwise. Every place that reads/writes TomSelect's internal
-	// options map (keyed by valueField) or filters Typesense by that key must go
-	// through this — hardcoding `.id` breaks in contact mode (lucos_search_component#189
+	// The document field TomSelect uses as its option key/form value: contact_uri when
+	// data-is-contact="true", id otherwise. Every place that reads/writes TomSelect's
+	// internal options map (keyed by valueField) or filters Typesense by that key must
+	// go through this — hardcoding `.id` breaks in contact mode (lucos_search_component#190
 	// review: `updateOption(result.id, ...)` silently no-op'd because tom-select hashes
-	// on valueField, not literally `id`).
+	// on valueField, not literally `id`). Checks the attribute directly rather than via a
+	// separate isContactMode getter — data-is-contact is also read directly elsewhere
+	// (e.g. buildFilterBy's callers), so a getter here would look more reusable than it is.
 	get valueFieldName() {
-		return this.isContactMode ? 'contact_uri' : 'id';
+		return this.getAttribute("data-is-contact") === "true" ? 'contact_uri' : 'id';
 	}
 	get commonIds() {
 		const common = this.getAttribute("data-common");
