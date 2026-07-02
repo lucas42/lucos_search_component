@@ -144,10 +144,19 @@ class LucosSearchComponent extends HTMLSpanElement {
 			...(component.isLanguageMode || component.getAttribute("data-common") ? { optgroupField: 'lang_family', lockOptgroupOrder: true } : {}),
 			...(component.hasAttribute("data-create") ? {
 				create: function(input) {
-					return { id: input, pref_label: input, created: true };
+					// Key must match valueField below (contact_uri in contact mode) — a
+					// hardcoded `id` key here would leave the created option unaddressable
+					// by TomSelect when data-is-contact="true".
+					const created = { pref_label: input, created: true };
+					created[component.isContactMode ? 'contact_uri' : 'id'] = input;
+					return created;
 				},
 			} : {}),
-			valueField: 'id',
+			// In contact mode, the form value (and TomSelect's option key) must be the
+			// lucos_contacts URI, not the eolas knowledge URI — see lucos_arachne#712.
+			// The lozenge click-through target stays data.id regardless (render.item below,
+			// and onItemSelect further down).
+			valueField: component.isContactMode ? 'contact_uri' : 'id',
 			labelField: 'pref_label',
 			searchField: [],
 			closeAfterSelect: true,
@@ -287,9 +296,12 @@ class LucosSearchComponent extends HTMLSpanElement {
 				const excludeIds = new Set([...commonIds, ...preloadedIds]);
 				const idsToFetch = ids.filter(id => !excludeIds.has(id));
 				if (idsToFetch.length > 0) {
+					// `ids` (and therefore idsToFetch) are keyed by whatever valueField is
+					// configured — contact_uri in contact mode, id otherwise — so the filter
+					// field must match, or the refetch matches zero documents.
 					const searchParams = new URLSearchParams({
 						q: '*',
-						filter_by: `id:[${idsToFetch.join(",")}]`,
+						filter_by: `${component.isContactMode ? 'contact_uri' : 'id'}:[${idsToFetch.join(",")}]`,
 						per_page: idsToFetch.length,
 					});
 					const results = await component.searchRequest(searchParams);
@@ -316,7 +328,10 @@ class LucosSearchComponent extends HTMLSpanElement {
 				const value = item.dataset.value;
 				const option = this.options[value];
 				if (option && option.created) return;
-				window.open(value, '_blank').focus();
+				// Navigate via option.id, not the raw form value — in contact mode the form
+				// value is contact_uri, a different resource from the eolas knowledge-graph
+				// entity the lozenge is meant to link to (lucos_search_component#189).
+				window.open((option && option.id) || value, '_blank').focus();
 			},
 			render:{
 				option: function(data, escape) {
@@ -454,6 +469,9 @@ class LucosSearchComponent extends HTMLSpanElement {
 		if (!types) return false;
 		return types.split(",").map(t => t.trim()).includes("Language");
 	}
+	get isContactMode() {
+		return this.getAttribute("data-is-contact") === "true";
+	}
 	get commonIds() {
 		const common = this.getAttribute("data-common");
 		if (!common) return [];
@@ -499,7 +517,7 @@ class LucosSearchComponent extends HTMLSpanElement {
 		searchParams.set('query_by_weights', "10,8,3,1");
 		searchParams.set('sort_by', "_text_match:desc,pref_label:asc");
 		searchParams.set('prioritize_num_matching_fields', false);
-		searchParams.set('include_fields', "id,pref_label,type,category,labels,lang_family");
+		searchParams.set('include_fields', "id,pref_label,type,category,labels,lang_family,contact_uri");
 		searchParams.set('enable_highlight_v1', false);
 		searchParams.set('highlight_start_tag', '<span class="highlight">')
 		searchParams.set('highlight_end_tag', '</span>');
