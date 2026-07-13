@@ -3,8 +3,8 @@
 		<title>Hello World Search Component</title>
 	</head>
 	<body>
-		<h1>lucos-search</h1>
-		<label for="search1">Everything:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}"><select id="search1"></select></span>
+		<h1>lucOS Search</h1>
+		<label for="search2">Everything:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}"><select id="search2"></select></span>
 		<label for="search2">No Tracks:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-exclude_types="Track"><select id="search2"></select></span>
 		<label for="search3">Only Cites and Rivers:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="City,River"><select id="search3"></select></span>
 		<label for="search4">Load with existing items:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}"><select id="search4" multiple>
@@ -14,11 +14,11 @@
 			<option selected>https://eolas.l42.eu/metadata/language/ain/</option>
 		</select></span>
 		<label for="search8">Languages grouped by family:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language"><select id="search8"></select></span>
-		<label for="search10">Languages preloaded:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language" data-preload><select id="search10"></select></span>
+		<label for="search20">Languages preloaded:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language" data-preload><select id="search20"></select></span>
 		<label for="search9">Languages with common pinned:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language" data-label-override-zxx="No Language" data-common="https://eolas.l42.eu/metadata/language/en/,https://eolas.l42.eu/metadata/language/ga/,https://eolas.l42.eu/metadata/language/zxx/"><select id="search9"></select></span>
 		<label for="search6">Languages with label override for zxx:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language" data-label-override-zxx="No Language"><select id="search6"></select></span>
 		<label for="search7">Languages with zxx pre-selected:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language" data-label-override-zxx="No Language"><select id="search7" multiple><option selected>https://eolas.l42.eu/metadata/language/zxx/</option></select></span>
-		<label for="search11">Languages with label override, common and preload:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language" data-label-override-zxx="Instrumental / No Language" data-common="https://eolas.l42.eu/metadata/language/en/,https://eolas.l42.eu/metadata/language/ga/,https://eolas.l42.eu/metadata/language/zxx/" data-preload><select id="search11" multiple ></select></span>
+		<label for="search21">Languages with label override, common and preload:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Language" data-label-override-zxx="Instrumental / No Language" data-common="https://eolas.l42.eu/metadata/language/en/,https://eolas.l42.eu/metadata/language/ga/,https://eolas.l42.eu/metadata/language/zxx/" data-preload><select id="search21" multiple ></select></span>
 		<label for="search_origins">Eolas only (data-allowed-origins):</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-allowed-origins="https://eolas.l42.eu"><select id="search_origins"></select></span>
 		<label for="search5">More than 10:</label>
 		<span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-exclude_types="Track"><select id="search5" multiple>
@@ -36,12 +36,12 @@
 			<option selected>https://eolas.l42.eu/metadata/place/316/</option>
 			<option selected>https://eolas.l42.eu/metadata/place/317/</option>
 		</select></span>
-		<h1>Multi-column layout</h1>
+		<h2>Multi-column layout</h2>
 		<p>Dropdowns should open within the same column as their field, not overflow into the adjacent column.</p>
 		<div style="column-count: 2; column-gap: 2em; border: 1px solid #ccc; padding: 1em;">
 			<div style="break-inside: avoid;">
-				<label for="col-search1">Theme tune:</label>
-				<span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Creative Work"><select id="col-search1"></select></span>
+				<label for="col-search2">Theme tune:</label>
+				<span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Creative Work"><select id="col-search2"></select></span>
 			</div>
 			<div style="break-inside: avoid;">
 				<label for="col-search2">Soundtrack:</label>
@@ -56,20 +56,20 @@
 				<span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}"><select id="col-search4"></select></span>
 			</div>
 		</div>
-		<h1>Form submission</h1>
+		<h2>Form submission</h2>
 		<form id="test-form" onsubmit="handleSubmit(event)">
 			<label for="tags">Tags:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}"><select id="tags" name="tags" multiple></select></span>
 			<button type="submit">Submit</button>
 		</form>
 		<pre id="form-output"></pre>
-		<h1>Inline create (data-create)</h1>
+		<h2>Inline create (data-create)</h2>
 		<p>Person field with <code>data-create</code>: type a name with no match and pick "Add new Person: …" to create a new entry. Created entries render with a cream dashed lozenge and serialise as <code>[name]</code>-only (no <code>[uri]</code>) on submit.</p>
 		<form id="create-form" onsubmit="handleCreateSubmit(event)">
 			<label for="composer">Composer:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-types="Person" data-create><select id="composer" name="composer" multiple></select></span>
 			<button type="submit">Submit</button>
 		</form>
 		<pre id="create-output"></pre>
-		<h1>Contact mode (data-is-contact)</h1>
+		<h2>Contact mode (data-is-contact)</h2>
 		<p>Person field restricted to <code>lucos_contacts</code> records (<code>data-is-contact="true"</code>). The selected-item lozenge links through to the <code>lucos_contacts</code> URI (<code>contact_uri</code>), and the value serialised on submit is that same URI — not the eolas URI — see lucos_search_component#189.</p>
 		<form id="contact-form" onsubmit="handleContactSubmit(event)">
 			<label for="linked-contact">Linked contact:</label><span is="lucos-search" data-api-key="${KEY_LUCOS_ARACHNE}" data-is-contact="true"><select id="linked-contact" name="linked_contact" multiple></select></span>
